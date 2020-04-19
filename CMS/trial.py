@@ -48,5 +48,38 @@ def superadmin():
 def aftersuperadminloggedin():
     return render_template('aftersuperadminloggedin.html')
 
+@app.route('/adminresolvecomplaint')
+def adminresolvecomplaint():
+    return render_template('adminresolvecomplaint.html')
+
+@app.route('/superadminaddadmin')
+def superadminaddadmin():
+    return render_template('superadminaddadmin.html')
+
+@app.route('/superadminremoveadmin')
+def superadminremoveadmin():
+    return render_template('superadminremoveadmin.html')
+
+@app.route('/superadminadddivision')
+def superadminadddivision():
+    return render_template('superadminadddivision.html')
+    
+@app.route('/superadminremovedivision')
+def superadminremovedivision():
+    return render_template('superadminremovedivision.html')
+    
+@app.route('/superadminadddepartment')
+def superadminadddepartment():
+    return render_template('superadminadddepartment.html')
+
+
+@app.route('/superadminremovedepartment')
+def superadminremovedepartment():
+    return render_template('superadminremovedepartment.html')
+
+@app.route('/superadminsettings')
+def superadminsettings():
+    return render_template('superadminsettings.html')
+
 if __name__ == '__main__':
    app.run(debug = True)
