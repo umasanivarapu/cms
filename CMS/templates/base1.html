@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CMS</title>
+<style>
+.button {
+  font: bold 20px Arial;
+  text-decoration: none;
+  background-color: #EEEEEE;
+  color: #333333;  
+  padding: 2px 6px 2px 6px;
+  
+}
+</style>
+</head>
+<body>
+
+<img src="logo.png" width="200"
+         height="80">
+
+<div class="button">
+
+<div>
+
+<span style="float:right"> <a href="{{ url_for('user') }}" class="button">User</a> </span><br/>
+<span style="float:right"> <a href="{{ url_for('admin') }}" class="button">Admin</a> </span><br/>
+<span style="float:right"> <a href="{{ url_for('superadmin') }}" class="button">SuperAdmin</a> </span><br/>
+  
+</div>
+</div>
+
+<br/><br/><br/><br/>
+
+<div style="text-align:center">
+    <span>WELCOME!!!!</span><br />
+    <span>This is complaint platform</span>
+</div>
+
+
+
+</body>
+</html> 
