@@ -1,41 +1,37 @@
-
-{% extends "bootstrap/base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
-
-{% block title %}
-Lodge Complaint
-{% endblock %}
-
-{% block styles %}
-{{super()}}
-<link rel="stylesheet" href="{{url_for('.static', filename='signin.css')}}">
-{% endblock %}
-
-{% block content %}
-<div class="container">
-
-  <form class="form-signin" method="POST" action = "/userlodgecomplaint">
-    <h2 class="form-signin-heading">Lodge Complaint</h2>
-
-    
-     {{ form.hidden_tag() }}
-    {{ wtf.form_field(form.summary) }}
+<!DOCTYPE html>
+<html>
+<head>
+<title>CMSPortal</title>
+<style>
+.button {
+  font: bold 20px Arial;
+  text-decoration: none;
+  background-color: #EEEEEE;
+  color: #333333;  
+  padding: 2px 6px 2px 6px;
   
-    
-   
-    <button class="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
-  </form>
+}
+</style>
+</head>
+<body>
 
-</div> <!-- /container -->
-{% endblock %}
+<a href="afteruserloggedin.html">
+         <img src="logo.png"
+         width=200" height="80">
+      </a>
 
+<div class="button">
+<span style="float:left"> <a href="{{ url_for('afteruserloggedin') }}" class="button">Back</a> </span>
+<span style="float:right"> <a href="{{ url_for('base1') }}" class="button">Logout</a> </span><br/>
+
+</div>
 
 <br/><br/>
 
-<!-- <form action = "/cgi-bin/hello_get.cgi" method = "get"> -->
+<form action = "{{ url_for('afteruserloggedin') }}" method = "get"> 
 <center>
 
-<label for="dept">Choose a Department:</label>
+<label for="dept">Choose the Department:</label>
 
 <select id="dept">
   <option value="1">1</option>
@@ -44,7 +40,7 @@ Lodge Complaint
   <option value="4">4</option>
 </select>
 <br/>
-<label for="subdept">Choose a Division:</label>
+<label for="subdept">Choose the Division:</label>
 
 <select id="subdept">
   <option value="1">1</option>
@@ -56,11 +52,16 @@ Lodge Complaint
 </center>
 <br/>
 <center>
+<label for="subdept">Subject of the Complaint:</label><br/>
+<textarea rows = "1" cols = "60" name = "description"></textarea><br/>
+</center>
+
+<center>
 <label for="subdept">Write your complaint:</label><br/>
 <textarea rows = "10" cols = "60" name = "description"></textarea><br/>
 <input type = "submit" value = "submit" />
 </center>
-<!-- </form> -->
+</form> -->
 
 
 </body>
