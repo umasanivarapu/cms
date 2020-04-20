@@ -1,32 +1,36 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}
+Login
+{% endblock %}
 
-<html>
-<head>
-<meta name="google-signin-client_id" content="46452293699-k2q8i91rdqg1n51sr69gu361mpv3e3kq.apps.googleusercontent.com">
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='signin.css')}}">
+{% endblock %}
 
+{% block content %}
+    <div class="container">
+
+      <form class="form-signin" method="POST" action="/login">
+        <h2 class="form-signin-heading">Please sign in</h2>
+
+        {{ form.hidden_tag() }}
+        {{ wtf.form_field(form.username) }}
+        {{ wtf.form_field(form.password) }}
+        {{ wtf.form_field(form.remember) }}
+
+        
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+
+        
+      </form>
+
+    </div> <!-- /container -->
+{% endblock %}
+
+{% block script %}
+{{super()}}
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 
-</head>
-<body>
-	<div class="g-signin2" data-onsuccess="onSignIn"></div>
-	<script>
-    function onSignIn(googleUser) {
-        var profile = googleUser.getBasicProfile();
-        console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-        console.log('Name: ' + profile.getName());
-        console.log('Image URL: ' + profile.getImageUrl());
-        console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-    }
-	</script>
-
-    <a href="#" onclick="signOut();">Sign out</a>
-    <script>
-      function signOut() {
-        var auth2 = gapi.auth2.getAuthInstance();
-        auth2.signOut().then(function () {
-          console.log('User signed out.');
-        });
-      }
-    </script>
-
-</body>
-</html>
+{% endblock %}
