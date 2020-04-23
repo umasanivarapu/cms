@@ -7,22 +7,21 @@
   font: bold 20px Arial;
   text-decoration: none;
   background-color: #EEEEEE;
-  color: #333333;  
+  color: #333333;
   padding: 2px 6px 2px 6px;
-  
+
 }
 </style>
 </head>
 <body>
 
-<a href="afteruserloggedin.html">
+<a href="afteradminloggedin">
          <img src="logo.png"
          width=200" height="80">
       </a>
 
 <div class="button">
-<span style="float:left"> <a href="{{ url_for('afteradminloggedin') }}" class="button">Back</a> </span>
-<span style="float:right"> <a href="{{ url_for('base1') }}" class="button">Logout</a> </span><br/>
+<span style="float:right"> <a href="base" class="button">Logout</a> </span><br/>
 </div>
 
 <br/><br/>
@@ -31,9 +30,8 @@
 <br/><br/>
 
 <!-- <form action = "/cgi-bin/hello_get.cgi" method = "get"> -->
-<form action="{{ url_for('afteradminloggedin') }}" style="margin-left:auto;margin-right:auto align='center'">
 <center>
-<table>
+<table style="margin-left:auto;margin-right:auto;">
   <tr>
     <td><label for="fname">First name:</label></td>
     <td><input type="text" id="fname" name="fname"></td>
@@ -46,16 +44,10 @@
     <td><label for="age">Age:</label></td>
     <td><input type="number" id="age" name="Age"></td>
   </tr>
-  <tr>
-    <td><label for="Department">Department:</label></td>
-    <td><input type="text" id="Department" name="Department"></td>
-  </tr>
-  <tr>
-  <td><input type="submit" value="Submit"></td>
-  </tr>
-</center>
 </table>
-</form> 
+  <input type="submit" value="Submit">
+</center>
+<!-- </form> -->
 
 
 </body>
