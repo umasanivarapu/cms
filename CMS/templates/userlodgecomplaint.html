@@ -7,29 +7,31 @@
   font: bold 20px Arial;
   text-decoration: none;
   background-color: #EEEEEE;
-  color: #333333;
+  color: #333333;  
   padding: 2px 6px 2px 6px;
-
+  
 }
 </style>
 </head>
 <body>
 
-<a href="afteruserloggedin">
+<a href="afteruserloggedin.html">
          <img src="logo.png"
          width=200" height="80">
       </a>
 
 <div class="button">
-<span style="float:right"> <a href="base" class="button">Logout</a> </span><br/>
+<span style="float:left"> <a href="{{ url_for('afteruserloggedin') }}" class="button">Back</a> </span>
+<span style="float:right"> <a href="{{ url_for('base1') }}" class="button">Logout</a> </span><br/>
+
 </div>
 
 <br/><br/>
 
-<!-- <form action = "/cgi-bin/hello_get.cgi" method = "get"> -->
+<form action = "{{ url_for('afteruserloggedin') }}" method = "get"> 
 <center>
 
-<label for="dept">Choose a Department:</label>
+<label for="dept">Choose the Department:</label>
 
 <select id="dept">
   <option value="1">1</option>
@@ -38,7 +40,7 @@
   <option value="4">4</option>
 </select>
 <br/>
-<label for="subdept">Choose a Division:</label>
+<label for="subdept">Choose the Division:</label>
 
 <select id="subdept">
   <option value="1">1</option>
@@ -50,11 +52,16 @@
 </center>
 <br/>
 <center>
+<label for="subdept">Subject of the Complaint:</label><br/>
+<textarea rows = "1" cols = "60" name = "description"></textarea><br/>
+</center>
+
+<center>
 <label for="subdept">Write your complaint:</label><br/>
 <textarea rows = "10" cols = "60" name = "description"></textarea><br/>
 <input type = "submit" value = "submit" />
 </center>
-<!-- </form> -->
+</form> -->
 
 
 </body>
