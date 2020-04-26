@@ -18,130 +18,328 @@ class RegisterForm(FlaskForm):
 	username = StringField('username',validators=[InputRequired(), Length(min=3, max=20 )])
 	password = PasswordField('password',validators=[InputRequired(), Length(min=8, max=80)])
 
-class Profile(FlaskForm):
+class UserProfile(FlaskForm):
 	first_name = StringField('First Name',validators=[InputRequired(), Length(min=3, max=20)])
 	last_name = StringField('Last Name',validators=[InputRequired(), Length(min=3, max=20)])
 	age = IntegerField('Age',validators=[InputRequired()])
 	department = StringField('Department', validators=[InputRequired(), Length(max=30)])
 
+class AdminProfile(FlaskForm):
+	first_name = StringField('First Name',validators=[InputRequired(), Length(min=3, max=20)])
+	last_name = StringField('Last Name',validators=[InputRequired(), Length(min=3, max=20)])
+	age = IntegerField('Age',validators=[InputRequired()])
+	# department = StringField('Department', validators=[InputRequired(), Length(max=30)])
+
+class SuperAdminProfile(FlaskForm):
+	first_name = StringField('First Name',validators=[InputRequired(), Length(min=3, max=20)])
+	last_name = StringField('Last Name',validators=[InputRequired(), Length(min=3, max=20)])
+	age = IntegerField('Age',validators=[InputRequired()])
+	department = StringField('Department', validators=[InputRequired(), Length(max=30)])
+
+
 class LodgeComplaint(FlaskForm):
+	subject = TextField('Subject of the complaint', validators=[InputRequired()])
 	summary = TextField('Write Your Complaint', validators=[InputRequired(), Length(min=5)])
 
 
+class AddRemoveAdmin(FlaskForm):
+	first_name = StringField('First Name',validators=[InputRequired(), Length(min=3, max=20)])
+	last_name = StringField('Last Name',validators=[InputRequired(), Length(min=3, max=20)])
+	age = IntegerField('Age',validators=[InputRequired()])
+	department = StringField('Department', validators=[InputRequired(), Length(max=30)])
+	division = StringField('Division',validators=[InputRequired()])
+
+class AddRemoveDivision(FlaskForm):
+	department = StringField('Department', validators=[InputRequired(), Length(max=30)])
+	division = StringField('Division',validators=[InputRequired()])
+
+class AddRemoveDepartment(FlaskForm):
+	department = StringField('Department', validators=[InputRequired(), Length(max=30)]) 
 
 
+
+
+
+
+#-------------------------------------------- -------------------Initial Page---------------------------------------------------------------------------#
 
 @app.route('/')
 def base1():
     return render_template('base1.html')
 
-@app.route('/user')
+#------------------------------------------------------------------User--------------------------------------------------------------------------------#
+
+@app.route('/user')                                              #login page
 def user():
     return render_template('user.html')
-    
-@app.route('/admin')
-def admin():
-    return render_template('admin.html')
 
-@app.route('/afteruserloggedin')
+@app.route('/signup', methods=['GET', 'POST'])                       #Signup
+def signup():
+	form = RegisterForm()
+
+	if form.validate_on_submit():
+		username = form.username.data
+		email = form.email.data
+		password = form.password.data
+		print(username)
+		print(email)
+		print(password)
+		return render_template('afteruserloggedin.html')
+
+	return render_template('signup.html',form = form)
+
+@app.route('/userlogin', methods=['GET','POST'])                              #Login
+def userlogin():
+	form = LoginForm()
+
+	if form.validate_on_submit():
+		username = form.username.data
+		password = form.password.data
+		remember = form.remember.data
+		print(username)
+		print(password)
+		print(remember)
+		return render_template('afteruserloggedin.html')
+	return render_template('userlogin.html',form = form)
+
+
+@app.route('/afteruserloggedin')                                   #user page
 def afteruserloggedin():
     return render_template('afteruserloggedin.html')
 
-@app.route('/afteradminloggedin')
+
+@app.route('/usersettings', methods=['GET','POST'])                  #user settings
+def usersettings():
+	form = UserProfile()
+
+	if form.validate_on_submit():
+		first_name = form.first_name.data
+		last_name = form.last_name.data
+		age = form.age.data
+		dept =  form.department.data
+		print(first_name)
+		print(last_name)
+		print(age)
+		print(dept)
+		return render_template('afteruserloggedin.html')
+
+	return render_template('usersettings.html',form = form)
+
+@app.route('/userlodgecomplaint', methods=['GET','POST'])                  # lodge complaint
+def userlodgecomplaint():
+	form = LodgeComplaint()
+
+	if form.validate_on_submit():
+		subject = form.subject.data
+		summary = form.summary.data
+		print(subject)
+		print(summary)
+		return render_template('afteruserloggedin.html')
+
+	return render_template('userlodgecomplaint.html',form = form)
+
+
+@app.route('/userhistory')                                                #complaint history
+def userhistory():
+	return render_template('userhistory.html')
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
+
+
+#--------------------------------------------------------------------Admin-----------------------------------------------------------------------------#
+
+    
+@app.route('/admin')                                             #login
+def admin():
+    return render_template('admin.html')
+
+
+@app.route('/adminlogin', methods=['GET','POST'])                              #Login
+def adminlogin():
+	form = LoginForm()
+
+	if form.validate_on_submit():
+		username = form.username.data
+		password = form.password.data
+		remember = form.remember.data
+		print(username)
+		print(password)
+		print(remember)
+		return render_template('afteradminloggedin.html')
+	return render_template('adminlogin.html',form = form)
+
+
+@app.route('/afteradminloggedin')                                   #Admin Page
 def afteradminloggedin():
     return render_template('afteradminloggedin.html')
-    
-@app.route('/adminsettings')
+
+
+@app.route('/adminsettings', methods=['GET','POST'])                     # Settings
 def adminsettings():
-    return render_template('adminsettings.html')
-@app.route('/adminhistory')
+	form = AdminProfile()
+
+	if form.validate_on_submit():
+		first_name = form.first_name.data
+		last_name = form.last_name.data
+		age = form.age.data
+		# dept =  form.department.data
+		print(first_name)
+		print(last_name)
+		print(age)
+		# print(dept)
+		return render_template('afteradminloggedin.html')
+
+	return render_template('adminsettings.html',form = form)
+
+@app.route('/adminresolvecomplaint')                                            #Resolve Complaint
+def adminresolvecomplaint():
+    return render_template('adminresolvecomplaint.html')
+
+   
+@app.route('/adminhistory')                                               #Admin history
 def adminhistory():
     return render_template('adminhistory.html')
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------------#
+#---------------------------------------------------------------------Super Admin------------------------------------------------------------------------#
 
 @app.route('/superadmin')
 def superadmin():
     return render_template('superadmin.html')
 
+@app.route('/superadminlogin', methods=['GET','POST'])                              #Login
+def superadminlogin():
+	form = LoginForm()
+
+	if form.validate_on_submit():
+		username = form.username.data
+		password = form.password.data
+		remember = form.remember.data
+		print(username)
+		print(password)
+		print(remember)
+		return render_template('aftersuperadminloggedin.html')
+	return render_template('superadminlogin.html',form = form)
+
 @app.route('/aftersuperadminloggedin')
 def aftersuperadminloggedin():
     return render_template('aftersuperadminloggedin.html')
 
-@app.route('/adminresolvecomplaint')
-def adminresolvecomplaint():
-    return render_template('adminresolvecomplaint.html')
 
-@app.route('/superadminaddadmin')
-def superadminaddadmin():
-    return render_template('superadminaddadmin.html')
+@app.route('/superadmin_addadmin',methods=['GET','POST'])
+def superadmin_addadmin():
+	form = AddRemoveAdmin()
 
-@app.route('/superadminremoveadmin')
-def superadminremoveadmin():
-    return render_template('superadminremoveadmin.html')
+	if form.validate_on_submit():
+		first_name = form.first_name.data
+		last_name = form.last_name.data
+		age = form.age.data
+		dept = form.department.data
+		division = form.division.data
+		print(first_name)
+		print(last_name)
+		print(age)
+		print(dept)
+		print(division)
+		return render_template('aftersuperadminloggedin.html')
 
-@app.route('/superadminadddivision')
-def superadminadddivision():
-    return render_template('superadminadddivision.html')
+	return render_template('superadminaddadmin.html',form = form)
+
+@app.route('/superadmin_removeadmin',methods=['GET','POST'])
+def superadmin_removeadmin():
+	form = AddRemoveAdmin()
+
+	if form.validate_on_submit():
+		first_name = form.first_name.data
+		last_name = form.last_name.data
+		age = form.age.data
+		dept = form.department.data
+		division = form.division.data
+		print(first_name)
+		print(last_name)
+		print(age)
+		print(dept)
+		print(division)
+		return render_template('aftersuperadminloggedin.html')
+
+	return render_template('superadminremoveadmin.html',form = form)
+
+@app.route('/superadmin_adddivision', methods =['GET','POST'])
+def superadmin_adddivision():
+	form = AddRemoveDivision()
+
+	if form.validate_on_submit():
+		dept = form.department.data
+		division = form.division.data
+		print(dept)
+		print(division)
+		return render_template('aftersuperadminloggedin.html')
+
+	return render_template('superadminadddivision.html', form=form)
     
-@app.route('/superadminremovedivision')
-def superadminremovedivision():
-    return render_template('superadminremovedivision.html')
+@app.route('/superadmin_removedivision',methods=['GET','POST'])
+def superadmin_removedivision():
+	form = AddRemoveDivision()
+
+	if form.validate_on_submit():
+		dept = form.department.data
+		division = form.division.data
+		print(dept)
+		print(division)
+		return render_template('aftersuperadminloggedin.html')
+
+	return render_template('superadminremovedivision.html',form=form)
     
-@app.route('/superadminadddepartment')
-def superadminadddepartment():
-    return render_template('superadminadddepartment.html')
+@app.route('/superadmin_adddepartment',methods=['GET','POST'])
+def superadmin_adddepartment():
+	form = AddRemoveDepartment()
+
+	if form.validate_on_submit():
+		dept = form.department.data
+		print(dept)
+		return render_template('aftersuperadminloggedin.html')
+
+	return render_template('superadminadddepartment.html',form=form)
 
 
-@app.route('/superadminremovedepartment')
-def superadminremovedepartment():
-    return render_template('superadminremovedepartment.html')
+@app.route('/superadmin_removedepartment', methods=['GET','POST'])
+def superadmin_removedepartment():
+	form = AddRemoveDepartment()
 
-@app.route('/superadminsettings')
+	if form.validate_on_submit():
+		dept = form.department.data
+		print(dept)
+		return render_template('aftersuperadminloggedin.html')
+
+	return render_template('superadminremovedepartment.html',form=form)
+
+@app.route('/superadminsettings', methods=['GET','POST'])
 def superadminsettings():
-    return render_template('superadminsettings.html')
-
-def index():
-	return render_template('index.html')
-
-@app.route('/login', methods=['GET','POST'])
-def login():
-	form = LoginForm()
+	form = SuperAdminProfile()
 
 	if form.validate_on_submit():
-		return form.username.data + ' ' +form.password.data
-	return render_template('login.html',form = form)
+		first_name = form.first_name.data
+		last_name = form.last_name.data
+		age = form.age.data
+		dept =  form.department.data
+		print(first_name)
+		print(last_name)
+		print(age)
+		print(dept)
+		return render_template('aftersuperadminloggedin.html')
+
+	return render_template('superadminsettings.html',form = form)
 
 
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-	form = RegisterForm()
-
-	if form.validate_on_submit():
-		return form.username.data + ' ' + form.email.data + ' ' + form.password.data
-
-	return render_template('signup.html',form = form)
-
-@app.route('/usersettings', methods=['GET','POST'])
-def usersettings():
-	form = Profile()
-
-	if form.validate_on_submit():
-		return form.first_name.data
-
-	return render_template('usersettings.html',form = form)
-
-@app.route('/userlodgecomplaint', methods=['GET','POST'])
-def userlodgecomplaint():
-	form = LodgeComplaint()
-
-	if form.validate_on_submit():
-		return form.summary.data
-
-	return render_template('userlodgecomplaint.html',form = form)
 
 
-@app.route('/userhistory')
-def userhistory():
-	return render_template('userhistory.html')
+#---------------------------------------------------------------------------------------------------------------------------------------------------------#
+
+
+
+
+
+
 
 @app.route('/dashboard')
 def dashboard():
