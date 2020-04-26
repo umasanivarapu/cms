@@ -1,15 +1,25 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>SuperAdminLogin</title>
-</head>
-<body>
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}
+User Page
+{% endblock %}
 
-<a href="base1.html">
-         <img src="logo.png"
-         width=200" height="80">
-      </a>
-<br/><br/>
-<span style="float:right"> <a href="{{url_for('aftersuperadminloggedin')}}" class="button">auth here</a> </span><br/>
-</body>
-</html>
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='signin.css')}}">
+{% endblock %}
+
+
+
+{% block content %}
+
+<center>
+	
+	
+	<a href="{{ url_for('superadminlogin') }}" class="button">Login</a>
+
+
+</center>
+
+{% endblock %}
+
