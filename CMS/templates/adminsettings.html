@@ -10,12 +10,23 @@ User Settings
 {% endblock %}
 
 {% block content %}
-    <div class="container">
-      <div class="button">
+<style>
+.button {
+  font: 20px Roboto;
+  text-decoration: none;
+  background-color: #333333;
+  color: #EEEEEE;  
+  padding: 2px 6px 2px 6px;
+  
+}
+</style>
+<div class="button">
         <span style="float:left"> <a href="{{ url_for('afteradminloggedin') }}" class="button">Back</a> </span>
         <span style="float:right"> <a href="{{ url_for('base1') }}" class="button">Logout</a> </span><br/>
       </div>
 
+    <div class="container">
+      
       <form class="form-signin" method="POST" action="/adminsettings">
         <h2 class="form-signin-heading">Account Settings</h2>
 
@@ -25,7 +36,7 @@ User Settings
         {{ wtf.form_field(form.age) }}
 
         
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
 
         
       </form>

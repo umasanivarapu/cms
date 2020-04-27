@@ -84,7 +84,10 @@ body {
   margin-top: 0;
 }
 
-
+.navbar-toggle.navbar-left {
+  float: left;
+  margin-left: 10px;
+}
 /*
  * Placeholder dashboard ideas
  */

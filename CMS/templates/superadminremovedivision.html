@@ -11,12 +11,22 @@ Remove Division
 {% endblock %}
 
 {% block content %}
-    <div class="container">
-      <div class="button">
+<style>
+.button {
+  font: 20px Roboto;
+  text-decoration: none;
+  background-color: #333333;
+  color: #EEEEEE;  
+  padding: 2px 6px 2px 6px;  
+}
+</style>
+	<div class="button">
         <span style="float:left"> <a href="{{ url_for('aftersuperadminloggedin') }}" class="button">Back</a> </span>
         <span style="float:right"> <a href="{{ url_for('base1') }}" class="button">Logout</a> </span><br/>
-      </div>
+    </div>
 
+    <div class="container">
+      
       <form class="form-signin" method="POST" action="/superadmin_removedivision">
         <h2 class="form-signin-heading">Remove Division</h2>
 

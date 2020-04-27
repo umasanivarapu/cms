@@ -3,6 +3,8 @@ from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, IntegerField, TextField
 from wtforms.validators import InputRequired, Email, Length
+from werkzeug.security import generate_password_hash
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Secret!'
@@ -80,7 +82,7 @@ def signup():
 	if form.validate_on_submit():
 		username = form.username.data
 		email = form.email.data
-		password = form.password.data
+		password = generate_password_hash(form.password.data, "sha256") #converts password into it's hash
 		print(username)
 		print(email)
 		print(password)
@@ -96,6 +98,8 @@ def userlogin():
 		username = form.username.data
 		password = form.password.data
 		remember = form.remember.data
+		hashed_pass = generate_password_hash(password, "sha256")
+		print (check_password_hash(hashed_pass, password)) 
 		print(username)
 		print(password)
 		print(remember)
@@ -162,6 +166,8 @@ def adminlogin():
 		username = form.username.data
 		password = form.password.data
 		remember = form.remember.data
+		hashed_pass = generate_password_hash(password, "sha256")
+		print (check_password_hash(hashed_pass, password)) 
 		print(username)
 		print(password)
 		print(remember)
@@ -215,6 +221,8 @@ def superadminlogin():
 		username = form.username.data
 		password = form.password.data
 		remember = form.remember.data
+		hashed_pass = generate_password_hash(password, "sha256")
+		print (check_password_hash(hashed_pass, password)) 
 		print(username)
 		print(password)
 		print(remember)
