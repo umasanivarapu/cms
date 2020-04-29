@@ -7,9 +7,9 @@
   font: bold 20px Arial;
   text-decoration: none;
   background-color: #333333;
-  color: #FFFFFF;  
+  color: #FFFFFF;
   padding: 2px 6px 2px 6px;
-  
+
 }
 </style>
 </head>
@@ -18,14 +18,14 @@
 
 <div class="button">
 <span style="float:left"> <a href="{{ url_for('afteruserloggedin') }}" class="button">Back</a> </span>
-<span style="float:right"> <a href="{{ url_for('base1') }}" class="button">Logout</a> </span><br/></div>
+<span style="float:right"> <a href="/logout" class="button">Logout</a> </span><br/></div>
 
 <br/><br/>
 
 <center>COMPLAINT HISTORY </center>
 <br/><br/>
 
-<!-- <form action = "/cgi-bin/hello_get.cgi" method = "get"> -->
+<!-- <form action = "/cgi-bin/hello_get.cgi" method = "get"> --><!--
 <center>
 <table style="margin-left:auto;margin-right:auto;">
   <tr>
@@ -36,8 +36,22 @@
     <th>Status</th>
     <th>Mark as Resolved</th>
     <th>Submit</th>
-  </tr>
+  </tr> -->
 <!-- </form> -->
+
+<form action="{{ url_for('afteruserloggedin') }}" style="margin-left:auto;margin-right:auto align='center'">
+<center>
+<table border = 1>
+  {% for  value in result %}
+  <tr>
+    <th> {{ value+"dept"}} </th>
+    <th> {{ value}} </th>
+    <td> <a href="{{ url_for('userresolvecomplaint') }}" class="button">here</a></td>
+  </tr>
+  {% endfor %}
+</table>
+</center>
+</form>
 
 
 </body>

@@ -16,18 +16,18 @@ Add Division
   font: 20px Roboto;
   text-decoration: none;
   background-color: #333333;
-  color: #EEEEEE;  
-  padding: 2px 6px 2px 6px;  
+  color: #EEEEEE;
+  padding: 2px 6px 2px 6px;
 }
 </style>
 
     <div class="button">
         <span style="float:left"> <a href="{{ url_for('aftersuperadminloggedin') }}" class="button">Back</a> </span>
-        <span style="float:right"> <a href="{{ url_for('base1') }}" class="button">Logout</a> </span><br/>
+        <span style="float:right"> <a href="/logout2" class="button">Logout</a> </span><br/>
       </div>
 
 	<div class="container">
-      
+
       <form class="form-signin" method="POST" action="/superadmin_adddivision">
         <h2 class="form-signin-heading">Add Division</h2>
 
@@ -36,10 +36,10 @@ Add Division
           {{ wtf.form_field(form.division) }}
 
 
-        
+
         <button class="btn btn-lg btn-primary btn-block" type="submit">Done</button>
 
-        
+
       </form>
 
     </div> <!-- /container -->

@@ -7,8 +7,8 @@
   font: 20px Roboto;
   text-decoration: none;
   background-color: #333333;
-  color: #EEEEEE;  
-  padding: 2px 6px 2px 6px;  
+  color: #EEEEEE;
+  padding: 2px 6px 2px 6px;
 }
 </style>
 </head>
@@ -16,7 +16,7 @@
 
 <div class="button">
 <span style="float:left"> <a>CMS</a> </span>
-<span style="float:right"> <a href="{{ url_for('base1') }}" class="button">Logout</a> </span><br/>
+<span style="float:right"> <a href="/logout2" class="button">Logout</a> </span><br/>
 </div>
 
 <br/><br/>
@@ -32,7 +32,9 @@
 	<center><a href="{{ url_for('superadmin_removedivision') }}" class="button">Remove Division</a></span></center><br/>
     <center><a href="{{ url_for('superadmin_adddepartment') }}" class="button">Add Department</a></span></center><br/>
 	<center><a href="{{ url_for('superadmin_removedepartment') }}" class="button">Remove Department</a></span></center><br/>
-	<center> <a href="{{url_for('superadminsettings')}}" class="button">Account Settings</a> </span> </center>
+	<center> <a href="{{url_for('superadminsettings')}}" class="button">Account Settings</a> </span> </center><br/>
+  <center> <a href="{{url_for('superadminprofileinfo')}}" class="button">Profile Information</a> </span> </center>
+
 
 
 

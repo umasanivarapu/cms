@@ -13,7 +13,7 @@ Super Admin Settings
     <div class="container">
       <div class="button">
         <span style="float:left"> <a href="{{ url_for('aftersuperadminloggedin') }}" class="button">Back</a> </span>
-        <span style="float:right"> <a href="{{ url_for('base1') }}" class="button">Logout</a> </span><br/>
+        <span style="float:right"> <a href="/logout2" class="button">Logout</a> </span><br/>
       </div>
 
       <form class="form-signin" method="POST" action="/superadminsettings">
@@ -25,10 +25,10 @@ Super Admin Settings
         {{ wtf.form_field(form.age) }}
         {{ wtf.form_field(form.department) }}
 
-        
+
         <button class="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
 
-        
+
       </form>
 
     </div> <!-- /container -->

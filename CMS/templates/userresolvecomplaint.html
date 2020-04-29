@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CMSPortal</title>
+<style>
+.button {
+  font: bold 20px Arial;
+  text-decoration: none;
+  background-color: #EEEEEE;
+  color: #333333;
+  padding: 2px 6px 2px 6px;
+
+}
+</style>
+</head>
+<body>
+
+<a href="afteruserloggedin.html">
+         <img src="logo.png"
+         width=200" height="80">
+      </a>
+
+<div class="button">
+<span style="float:left"> <a href="{{ url_for('afteruserloggedin') }}" class="button">Back</a> </span>
+<span style="float:right"> <a href="/logout" class="button">Logout</a> </span><br/>
+
+</div>
+
+<br/><br/>
+
+<!-- <form action = "/cgi-bin/hello_get.cgi" method = "get"> -->
+<center>
+
+<label for="dept">Department:</label>
+<input type="text" name = "dept" value = "{{result["dept"]}}" readonly>
+<br/>
+<label for="division">Division:</label>
+<input type="text" name = "division" value = "{{result["division"]}}" readonly>
+<br/>
+<br/>
+<label for="complaint">Description of Complaint:</label>
+<br/>
+<br/>
+<label for="statusquo">Status from Admin:</label>
+<input type="text" name = "statusquo" value = "{{result["statusquo"]}}" readonly>
+<br/>
+<!-- <input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly> -->
+<center> Confirmation: </center>
+
+<form>
+  <input type="radio" id="yes" name="status" value="yes">
+  <label for="yes">Yes</label>
+  <input type="radio" id="no" name="status" value="no">
+  <label for="no">No</label><br/>
+  <input type="submit" value="Submit">
+</form>
+<!-- <table border = 1>
+  <tr>
+    <th> <input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly> </th>
+  </tr>
+</table>
+
+<br/> -->
+<!-- <textarea id="myTextarea" readonly>
+342 Alvin Road
+Ducksburg</textarea> -->
+
+<!-- <p id="demo"></p>
+
+</center>
+<script>
+function called() {
+  var x = document.getElementById("myTextarea").value;
+  document.getElementById("demo").innerHTML = x;
+}
+</script>
+ --><!-- <center>
+<label for="complaint">Here's the complaint:</label><br/>
+<script> myFunction() </script>
+
+<script>
+function myFunction() {
+var x = document.createElement("TEXTAREA");
+var t = document.createTextNode("Here's the complaint");
+x.appendChild(t);
+document.body.appendChild(x);
+</script>
+<br/>
+
+</center> -->
+<!-- </form> -->
+
+
+</body>
+</html>
+<!-- <textarea rows = "10" cols = "60" value = "{{result["complaint"]}}" readonly> </textarea>  -->

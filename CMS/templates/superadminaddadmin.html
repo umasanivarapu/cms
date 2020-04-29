@@ -16,32 +16,34 @@ Add Admin
   font: 20px Roboto;
   text-decoration: none;
   background-color: #333333;
-  color: #EEEEEE;  
-  padding: 2px 6px 2px 6px;  
+  color: #EEEEEE;
+  padding: 2px 6px 2px 6px;
 }
 </style>
 	<div class="button">
         <span style="float:left"> <a href="{{ url_for('aftersuperadminloggedin') }}" class="button">Back</a> </span>
-        <span style="float:right"> <a href="{{ url_for('base1') }}" class="button">Logout</a> </span><br/>
+        <span style="float:right"> <a href="/logout2" class="button">Logout</a> </span><br/>
     </div>
 
     <div class="container">
-      
+
       <form class="form-signin" method="POST" action="/superadmin_addadmin">
         <h2 class="form-signin-heading">Add Admin</h2>
 
         {{ form.hidden_tag() }}
+        {{ wtf.form_field(form.email) }}
         {{ wtf.form_field(form.first_name) }}
         {{ wtf.form_field(form.last_name) }}
         {{ wtf.form_field(form.age) }}
          {{ wtf.form_field(form.department) }}
           {{ wtf.form_field(form.division) }}
+          {{ wtf.form_field(form.passcode) }}
 
 
-        
+
         <button class="btn btn-lg btn-primary btn-block" type="submit">Done</button>
 
-        
+
       </form>
 
     </div> <!-- /container -->
