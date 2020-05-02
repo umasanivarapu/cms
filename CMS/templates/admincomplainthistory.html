@@ -29,15 +29,20 @@
 <!-- <form action = "/cgi-bin/hello_get.cgi" method = "get"> -->
 <form action="{{ url_for('afteradminloggedin') }}" style="margin-left:auto;margin-right:auto align='center'">
 <center>
-<table border = 1>
-  {% for  value in result %}
-  <tr>
-    <th> {{ value+"dept"}} </th>
-    <th> {{ value}} </th>
-    <td> <a href="{{ url_for('adminresolvecomplaint') }}" class="button">here</a></td>
-  </tr>
-  {% endfor %}
-</table>
+  <table border = 5>
+    <th>complaint_id</th>
+    <th>DEPARTMANT</th>
+    <th>DIVISION</th>
+    <th>subject</th>
+    {% for  row in result %}
+    <tr>
+      <th> {{ row[0]}}</th>
+      <th> {{ row[3]}} </th>
+      <th> {{ row[4]}} </th>
+      <td> <a href="{{url_for('adminresolvecomplaint',cid = row[0])}}" class="button">{{row[5]}}</a></td>
+    </tr>
+    {% endfor %}
+  </table>
 </center>
 </form>
 <!-- </form> -->

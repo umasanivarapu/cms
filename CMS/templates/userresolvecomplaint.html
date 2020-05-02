@@ -21,7 +21,7 @@
       </a>
 
 <div class="button">
-<span style="float:left"> <a href="{{ url_for('afteruserloggedin') }}" class="button">Back</a> </span>
+<span style="float:left"> <a href="{{ url_for('userhistory') }}" class="button">Back</a> </span>
 <span style="float:right"> <a href="/logout" class="button">Logout</a> </span><br/>
 
 </div>
@@ -39,6 +39,7 @@
 <br/>
 <br/>
 <label for="complaint">Description of Complaint:</label>
+<input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly>
 <br/>
 <br/>
 <label for="statusquo">Status from Admin:</label>
@@ -47,7 +48,7 @@
 <!-- <input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly> -->
 <center> Confirmation: </center>
 
-<form>
+<!-- <form>
   <input type="radio" id="yes" name="status" value="yes">
   <label for="yes">Yes</label>
   <input type="radio" id="no" name="status" value="no">
@@ -88,7 +89,7 @@ document.body.appendChild(x);
 <br/>
 
 </center> -->
-<!-- </form> -->
+<!-- </form> --> -->
 
 
 </body>

@@ -39,14 +39,19 @@
   </tr> -->
 <!-- </form> -->
 
-<form action="{{ url_for('afteruserloggedin') }}" style="margin-left:auto;margin-right:auto align='center'">
+<form action="{{ url_for('afteruserloggedin') }}" method = "POST" style="margin-left:auto;margin-right:auto align='center'">
 <center>
-<table border = 1>
-  {% for  value in result %}
+<table border = 5>
+  <th>complaint_id</th>
+  <th>DEPARTMANT</th>
+  <th>DIVISION</th>
+  <td>subject</td>
+  {% for  row in result %}
   <tr>
-    <th> {{ value+"dept"}} </th>
-    <th> {{ value}} </th>
-    <td> <a href="{{ url_for('userresolvecomplaint') }}" class="button">here</a></td>
+    <th> {{ row[0]}}</th>
+    <th> {{ row[3]}} </th>
+    <th> {{ row[4]}} </th>
+    <td> <a href="{{url_for('userresolvecomplaint',cid = row[0])}}" class="button">{{row[5]}}</a></td>
   </tr>
   {% endfor %}
 </table>

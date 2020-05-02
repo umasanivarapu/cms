@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CMSPortal</title>
+<style>
+.button {
+  font: 20px Roboto;
+  text-decoration: none;
+  background-color: #333333;
+  color: #EEEEEE;
+  padding: 2px 6px 2px 6px;
+
+}
+</style>
+</head>
+<body>
+
+
+
+
+<div class="button">
+<span style="float:left"> <a href="{{ url_for('afteruserloggedin') }}" class="button">Back</a> </span>
+<span style="float:right"> <a href="/logout" class="button">Logout</a> </span><br/>
+</div>
+
+<br/><br/>
+
+<center>Admin Details </center>
+<br/><br/>
+<!-- 
+<center>
+  <table border = 5>
+    <th>DEPARTMENT</th>
+    <th>DIVISION</th>
+    {% for  row in result %}
+    <tr>
+      <th> {{ row[0]}}</th>
+      <th> {{ row[1]}} </th>
+    </tr>
+    {% endfor %}
+  </table>
+</center>
+</form>
+ -->
+<form action="{{ url_for('user_show_divisions') }}"  method = "POST"  style="margin-left:auto;margin-right:auto align='center'">
+{% if(result) %}
+<select name="dept"> 
+{% for dept in result %} 
+<option value="{{ dept[0] }}"> {{ dept[0] }}</option>   
+{% endfor %}
+</select>
+<input type="submit">
+{% endif %}

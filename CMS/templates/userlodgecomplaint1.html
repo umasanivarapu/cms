@@ -27,27 +27,15 @@ CMSPortal
 
 </div>
 
-<br/><br/>
-
-<div class="container">
-
-  <form class="form-signin" method="POST" action = "/userlodgecomplaint">
-<center>
-
-<h2 class="form-signin-heading"></h2>
-
-
-     {{ form.hidden_tag() }}
-    {{ wtf.form_field(form.category) }}
-    {{ wtf.form_field(form.subcategory) }}
-    {{ wtf.form_field(form.subject) }}
-    {{ wtf.form_field(form.summary) }}
-
-
-    <button class="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
-</form>
-
-</div>
+<form action="{{ url_for('userlodgecomplaint2') }}"  method = "POST"  style="margin-left:auto;margin-right:auto align='center'">
+{% if(result) %}
+<select name="dept">
+{% for dept in result %}
+<option value="{{ dept[0] }}"> {{ dept[0] }}</option>
+{% endfor %}
+</select>
+<input type="submit">
+{% endif %}
 
 
 {% endblock %}

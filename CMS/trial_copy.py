@@ -1,11 +1,11 @@
 from flask import Flask,render_template,request,session,redirect,url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SelectField,IntegerField, TextField
+from wtforms import StringField, PasswordField, BooleanField, IntegerField, TextField
 from wtforms.validators import InputRequired, Email, Length
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
-# from nocache import nocache
+from nocache import nocache
 
 
 from app import app, cursor, db
@@ -46,8 +46,6 @@ class SuperAdminProfile(FlaskForm):
 
 
 class LodgeComplaint(FlaskForm):
-	# category = SelectField('category',coerce = str,choices=[])
-	subcategory = SelectField('subcategory',validators = [InputRequired()],coerce = str,choices=[])
 	subject = TextField('Subject of the complaint', validators=[InputRequired()])
 	summary = TextField('Write Your Complaint', validators=[InputRequired(), Length(min=5)])
 
@@ -73,29 +71,25 @@ class RemoveAdmin(FlaskForm):
 
 
 
-class DynamicDropdown(FlaskForm):
-	department = StringField('department',choices=[('a','a'),('b','b')])
-	division = StringField('division',choices=[])
-
 
 
 #-------------------------------------------- -------------------Initial Page---------------------------------------------------------------------------#
 
 @app.route('/')
-#@nocache
+@nocache
 def base1():
-	return render_template('base1.html')
+    return render_template('base1.html')
 
 #------------------------------------------------------------------User--------------------------------------------------------------------------------#
 
 @app.route('/user')
-#@nocache                                             #login page
+@nocache                                             #login page
 def user():
 	session['username']=" "
 	return render_template('user.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
-#@nocache                       #Signup
+@nocache                       #Signup
 def signup():
 	form = RegisterForm()
 	if form.validate_on_submit():
@@ -118,7 +112,7 @@ def signup():
 	return render_template('signup.html',form = form)
 
 @app.route('/userlogin', methods=['GET','POST'])
-#@nocache                              #Login
+@nocache                              #Login
 def userlogin():
 	if session['username'] != " ":
 		return render_template('afteruserloggedin.html')
@@ -145,13 +139,13 @@ def userlogin():
 		return render_template('userlogin.html',form = form)
 
 
-@app.route('/afteruserloggedin',methods = ['POST', 'GET'])
-#@nocache                               #user page
+@app.route('/afteruserloggedin')
+@nocache                               #user page
 def afteruserloggedin():
-	return render_template('afteruserloggedin.html')
+    return render_template('afteruserloggedin.html')
 
 @app.route('/userprofileinfo',methods = ['POST', 'GET'])
-#@nocache      #user profile info
+@nocache      #user profile info
 def userprofileinfo():
 
 	sql = "select firstname,lastname,age from users where user_id = '{0}'"
@@ -166,7 +160,7 @@ def userprofileinfo():
 
 
 @app.route('/usersettings', methods=['GET','POST'])
-#@nocache                 #user settings
+@nocache                 #user settings
 def usersettings():
 	form = UserProfile()
 
@@ -187,109 +181,49 @@ def usersettings():
 
 	return render_template('usersettings.html',form = form)
 
-@app.route('/userlodgecomplaint1',methods=['POST','GET'])
-def userlodgecomplaint1():
-	# sql = "select category_ref,subcategory_ref from admin_cat order by category_ref"
-	sql = "select * from cat"
-	cursor.execute(sql)
-	result = cursor.fetchall()
-	# form = DynamicDropdown()
-	# cursor.execute(sql)
-	# result1 = cursor.fetchall()
-	# result1 = dict()
-	# result1 = [('a','1'),('b','2'),('c','3'),('d','1'),('e','2')]
-	return render_template('userlodgecomplaint1.html',result = result)
+@app.route('/userlodgecomplaint', methods=['GET','POST'])
+@nocache                  # lodge complaint
+def userlodgecomplaint():
+	form = LodgeComplaint()
 
-@app.route('/userlodgecomplaint2',methods=['POST','GET'])
-def userlodgecomplaint2():
-	var1 = request.form.get('dept')
-	print(var1)
-	sql = "select subcategory_ref from admin_cat where category_ref = '{0}' "    #query for subcat fetching
-	cursor.execute(sql.format(var1))
-	result = cursor.fetchall()
-	# form1 = LodgeComplaint()
-	res_dic = []
-	for i in range(len(result)):
-		element = (str(i+1),str(result[i][0]))
-		res_dic.append(element)
-	print(res_dic)
-	# form1.subcategory.choices = res_dic
-	# print(form1.errors)
-	# if form1.validate_on_submit():
-		# subject = form1.subject.data
-		# summary = form1.summary.data
-		# subcategory = form1.subcategory.data
-		# print(subject)
-		# print(summary)
-		# print(subcategory)
-		# print(var1)
-		# status = 0
-		# cursor.execute("insert into complaint(category_ref,subcat_ref,complaint,status,user_id_ref,subject) values(%s,%s,%s,%s,%s,%s)",(category,subcategory,summary,status,session['username']))
-		# db.commit()
-		# return render_template('afteruserloggedin.html')
-	return render_template('userlodgecomplaint2.html',result = result,value = var1)      #have to add value of sel for display here
+	if form.validate_on_submit():
+		subject = form.subject.data
+		summary = form.summary.data
+		result = request.form
+		print(result)
+		print(subject)
+		print(summary)
+		print(user_name)
+		cursor.execute("insert into complaint values(DEFAULT,'somecat','somesubcat',%s,'0',%s,%s)",(summary,session['username'],subject))
+		db.commit()
+		return render_template('afteruserloggedin.html')
+
+	return render_template('userlodgecomplaint.html',form = form)
 
 
-@app.route('/userlodgecomplaint3/<department>/', methods=['POST','GET'])
-#@nocache                  # lodge complaint
-def userlodgecomplaint3(department):
-	variable2 = request.form.get('subcategory')
-	department = str(department)
-	print(variable2)
-	print(department)
-	return render_template('userlodgecomplaint3.html',val=department,val1 = variable2)
-
-@app.route('/complaintsubmitted/<dept>/<div1>',methods = ['GET','POST'])
-def complaintsubmitted(dept,div1):
-	# print(passing)
-	# (dept,div) = passing.split(',')
-	category = str(dept)
-	subcategory = str(div1)
-	subject = request.form.get('subject')
-	summary = request.form.get('summary')
-	status  = 0
-	cursor.execute("insert into complaint(category_ref,subcat_ref,complaint,status,user_id_ref,subject) values(%s,%s,%s,%s,%s,%s)",(category,subcategory,summary,status,session['username'],subject))
-	print(db.commit())
-	#possibly add a line to check commit and display pass or fail in value
-	return render_template('complaintsubmitted.html')
-
-# result1 = dict()
-# i=0
-# for i in range(1,1000):
-# 	result1[str(i)] = i+2
+result1 = dict()
+i=0
+for i in range(1,1000):
+	result1[str(i)] = i+2
 
 @app.route('/userhistory',methods = ['POST','GET'])
-#@nocache                          # complaint history
+@nocache                          # complaint history
 def userhistory():
-	sql = "select complaint_id,complaint,status,category_ref,subcat_ref,subject from complaint where user_id_ref = '{0}'"
-	cursor.execute(sql.format(session['username']))
-	result1 = cursor.fetchall()
-	return render_template('userhistory.html',result = result1)
+    return render_template('userhistory.html',result = result1)
 
-@app.route('/userresolvecomplaint/<cid>')
-#@nocache
-def userresolvecomplaint(cid):
+@app.route('/userresolvecomplaint')
+@nocache
+def userresolvecomplaint():
 	result1 = dict()
-	cid = int(cid)
-	try:
-		sql = "select category_ref,subcat_ref,complaint,status from complaint where complaint_id = '{0}'"
-		cursor.execute(sql.format(cid))
-		res = cursor.fetchall()
-		result1["dept"] = res[0][0]
-		result1["division"] = res[0][1]
-		result1["complaint"] = res[0][2]
-		if res[0][3] == 1:
-			result1["statusquo"] = "YES"
-		else:
-			result1["statusquo"] = "NO"
-		return render_template('userresolvecomplaint.html' , result = result1)
-	except:
-		cursor.rollback()
-		print("check for error")
+	result1["dept"] = "hey"
+	result1["division"] = "hello"
+	result1["complaint"] = "edfvghyhbnkjhgfds "
+	result1["statusquo"] = "yes"
+	return render_template('userresolvecomplaint.html' , result = result1)
 
 
 @app.route('/logout')
-##@nocache
+@nocache
 def logout():
 	session.pop('username',None)
 	return redirect(url_for('base1'))
@@ -302,14 +236,13 @@ def logout():
 
 
 @app.route('/admin')
-##@nocache                                           #login
+@nocache                                           #login
 def admin():
-	session['admin'] = " "
-	return render_template('admin.html')
+    return render_template('admin.html')
 
 
 @app.route('/adminlogin', methods=['GET','POST'])
-#@nocache                            #Login
+@nocache                            #Login
 def adminlogin():
 	form = LoginForm()
 
@@ -333,13 +266,13 @@ def adminlogin():
 
 
 @app.route('/afteradminloggedin')
-#@nocache                            #Admin Page
+@nocache                            #Admin Page
 def afteradminloggedin():
     return render_template('afteradminloggedin.html')
 
 
 @app.route('/adminsettings', methods=['GET','POST'])
-#@nocache                    # Settings
+@nocache                    # Settings
 def adminsettings():
 	form = AdminProfile()
 
@@ -361,7 +294,7 @@ def adminsettings():
 	return render_template('adminsettings.html',form = form)
 
 @app.route('/adminprofileinfo',methods = ['POST', 'GET'])
-#@nocache   			#Admin Profile Info
+@nocache   			#Admin Profile Info
 def adminprofileinfo():
 	sql = "select name,lastname,age from admin where admin_id='{0}'"
 	cursor.execute(sql.format(session['admin']))
@@ -376,25 +309,13 @@ def adminprofileinfo():
 	result1["dept"] = "dept to be decided"
 	return render_template('adminprofileinfo.html',result = result1)
 
-@app.route('/adminresolvecomplaint/<cid>')
-#@nocache                                           #Resolve Complaint
-def adminresolvecomplaint(cid):
+@app.route('/adminresolvecomplaint')
+@nocache                                           #Resolve Complaint
+def adminresolvecomplaint():
 	result1 = dict()
-	cid = int(cid)
-	try:
-		sql = "select category_ref,subcat_ref,complaint,status from complaint where complaint_id = '{0}'"
-		cursor.execute(sql.format(cid))
-		res = cursor.fetchall()
-		result1["dept"] = res[0][0]
-		result1["division"] = res[0][1]
-		result1["complaint"] = res[0][2]
-		if res[0][3] == 1:
-			result1["statusquo"] = "YES"
-		else:
-			result1["statusquo"] = "NO"
-	except:
-		cursor.rollback()
-		print("admin error db")
+	result1["dept"] = "hey"
+	result1["division"] = "hello"
+	result1["complaint"] = "edfvghyhbnkjhgfds geif7t,9d"
 	return render_template('adminresolvecomplaint.html' , result = result1)
 
 result1 = dict()
@@ -403,44 +324,29 @@ for i in range(1,1000):
 	result1[str(i)] = i+2
 
 @app.route('/admincomplainthistory',methods = ['POST','GET'])
-#@nocache		               #Admin history
+@nocache		               #Admin history
 def admincomplainthistory():
-	sql = "select complaint_id,complaint,status,complaint.category_ref,subcat_ref,subject from admin_cat INNER JOIN complaint  ON (admin_cat.category_ref = complaint.category_ref AND admin_cat.subcategory_ref = complaint.subcat_ref)where admin_ref = '{0}'"
-	cursor.execute(sql.format(session['admin']))
-	result1 = cursor.fetchall()
-	return render_template('admincomplainthistory.html',result = result1)
+    return render_template('admincomplainthistory.html',result = result1)
 
 
 
 @app.route('/logout1')
-#@nocache
+@nocache
 def logout1():
 	session.pop('admin',None)
 	return redirect(url_for('base1'))
-
-@app.route('/display_deptwise_heads')
-def display_deptwise_heads():
-	sql = "select subcat.category_ref,subcat.subcategory,admin_ref from subcat left join admin_cat on(admin_cat.category_ref = subcat.category_ref and admin_cat.subcategory_ref = subcat.subcategory)"
-	cursor.execute(sql)
-	result = cursor.fetchall()
-	return render_template('sshow_dept_heads.html',result = result)
-
-
-
-
 
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------Super Admin------------------------------------------------------------------------#
 
 @app.route('/superadmin')
-#@nocache
+@nocache
 def superadmin():
-	session['superuser'] = " "
-	return render_template('superadmin.html')
+    return render_template('superadmin.html')
 
 @app.route('/superadminlogin', methods=['GET','POST'])
-#@nocache                            #Login
+@nocache                            #Login
 def superadminlogin():
 	form = LoginForm()
 
@@ -462,13 +368,13 @@ def superadminlogin():
 	return render_template('superadminlogin.html',form = form)
 
 @app.route('/aftersuperadminloggedin')
-#@nocache
+@nocache
 def aftersuperadminloggedin():
     return render_template('aftersuperadminloggedin.html')
 
 
 @app.route('/superadmin_addadmin',methods=['GET','POST'])
-#@nocache
+@nocache
 def superadmin_addadmin():
 	form = AddRemoveAdmin()
 
@@ -499,7 +405,7 @@ def superadmin_addadmin():
 	return render_template('superadminaddadmin.html',form = form)
 
 @app.route('/superadminprofileinfo',methods = ['POST', 'GET'])
-#@nocache
+@nocache
 def superadminprofileinfo():
 	sql = "select * from super_admin where superadmin = '{0}'"
 	cursor.execute(sql.format(session['superuser']))
@@ -512,7 +418,7 @@ def superadminprofileinfo():
 	return render_template('superadminprofileinfo.html',result = result1)
 
 @app.route('/superadmin_removeadmin',methods=['GET','POST'])
-#@nocache
+@nocache
 def superadmin_removeadmin():
 	form = RemoveAdmin()
 
@@ -542,7 +448,7 @@ def superadmin_removeadmin():
 	return render_template('superadminremoveadmin.html',form = form)
 
 @app.route('/superadmin_adddivision', methods =['GET','POST'])
-#@nocache
+@nocache
 def superadmin_adddivision():
 	form = AddRemoveDivision()
 
@@ -571,7 +477,7 @@ def superadmin_adddivision():
 	return render_template('superadminadddivision.html', form=form)
 
 @app.route('/superadmin_removedivision',methods=['GET','POST'])
-#@nocache
+@nocache
 def superadmin_removedivision():
 	form = AddRemoveDivision()
 
@@ -603,7 +509,7 @@ def superadmin_removedivision():
 	return render_template('superadminremovedivision.html',form=form)
 
 @app.route('/superadmin_adddepartment',methods=['GET','POST'])
-#@nocache
+@nocache
 def superadmin_adddepartment():
 	form = AddRemoveDepartment()
 
@@ -627,7 +533,7 @@ def superadmin_adddepartment():
 
 
 @app.route('/superadmin_removedepartment', methods=['GET','POST'])
-#@nocache
+@nocache
 def superadmin_removedepartment():
 	form = AddRemoveDepartment()
 
@@ -650,7 +556,7 @@ def superadmin_removedepartment():
 	return render_template('superadminremovedepartment.html',form=form)
 
 @app.route('/superadminsettings', methods=['GET','POST'])
-#@nocache
+@nocache
 def superadminsettings():
 	form = SuperAdminProfile()
 
@@ -668,13 +574,15 @@ def superadminsettings():
 	return render_template('superadminsettings.html',form = form)
 
 @app.route('/logout2')
-#@nocache
+@nocache
 def logout2():
 	session.pop('superadmin',None)
 	return redirect(url_for('base1'))
 
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------#
+
+
 
 
 

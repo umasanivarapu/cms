@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CMSPortal</title>
+<style>
+.button {
+  font: 20px Roboto;
+  text-decoration: none;
+  background-color: #333333;
+  color: #EEEEEE;
+  padding: 2px 6px 2px 6px;
+
+}
+</style>
+</head>
+<body>
+
+
+<div class="button">
+<span style="float:left"> <a href="{{ url_for('aftersuperadminloggedin') }}" class="button">Back</a> </span>
+<span style="float:right"> <a href="/logout2" class="button">Logout</a> </span><br/>
+</div>
+
+<br/><br/>
+
+<center>Admin Details </center>
+<br/><br/>
+
+<form action="{{ url_for('aftersuperadminloggedin') }}" style="margin-left:auto;margin-right:auto align='center'">
+<center>
+  <table border = 5>
+    <th>DEPARTMANT</th>
+    <th>DIVISION</th>
+    <th>Admin</th>
+    {% for  row in result %}
+    <tr>
+      <th> {{ row[0]}}</th>
+      <th> {{ row[1]}} </th>
+      <th> {{ row[2]}} </th>
+    </tr>
+    {% endfor %}
+  </table>
+</center>
+</form>

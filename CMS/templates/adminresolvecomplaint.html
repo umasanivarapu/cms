@@ -21,7 +21,7 @@
       </a>
 
 <div class="button">
-<span style="float:left"> <a href="{{ url_for('afteradminloggedin') }}" class="button">Back</a> </span>
+<span style="float:left"> <a href="{{ url_for('admincomplainthistory') }}" class="button">Back</a> </span>
 <span style="float:right"> <a href="/logout1" class="button">Logout</a> </span><br/>
 
 </div>
@@ -39,6 +39,7 @@
 <br/>
 <br/>
 <label for="complaint">Description of Complaint:</label>
+<input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly>
 <br/>
 <br/>
 <!-- <input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly> -->

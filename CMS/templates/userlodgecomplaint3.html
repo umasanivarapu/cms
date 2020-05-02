@@ -1,0 +1,56 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}
+CMSPortal
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='starter-template.css')}}">
+{% endblock %}
+
+{% block content %}
+<style>
+.button {
+  font: 20px Roboto;
+  text-decoration: none;
+  background-color: #333333;
+  color: #FFFFFF;
+  padding: 2px 6px 2px 6px;
+}
+</style>
+
+<div class="button">
+<span style="float:left"> <a href="{{ url_for('afteruserloggedin') }}" class="button">Back</a> </span>
+<span style="float:right"> <a href="/logout" class="button">Logout</a> </span><br/>
+
+</div>
+
+<br/><br/>
+<center>
+<!-- <table>
+<tr>
+  <td><label for="fname">department:</label></td>
+  <td><input type="text" name = "fname" value = "{{val}}" readonly> </td>
+</tr>
+<tr>
+  <td><label for="fname">division:</label></td>
+  <td><input type="text" name = "fname" value = "{{val2}}" readonly> </td>
+</tr>
+</center>
+</table> -->
+<center>Department : {{val}} </center>
+<center>Division : {{val1}} </center>
+<form action="{{ url_for('complaintsubmitted',dept= val,div1 = val1) }}"  method = "POST"  style="margin-left:auto;margin-right:auto align='center'">
+<br>
+<textarea rows = "5" cols = "60" name = "subject">
+Enter details here
+</textarea><br>
+<textarea rows = "20" cols = "100" name = "summary">
+Enter details here
+</textarea> <br>
+<input type = submit value = "submit">
+</form>
+
+{% endblock %}
