@@ -23,7 +23,8 @@
 <span style="float:right"> <a href="/logout" class="button">Logout</a> </span><br/>
 </div>
 
-<br/><br/><br/><br/>
+<br/><br/>
+<div>{% include 'alert1.html'%}</div>
 
 
 <center>WELCOME!!</center>
@@ -38,6 +39,9 @@
 <br/>
 <center> <a href="{{url_for('userprofileinfo')}}" class="button">Profile Information</a> </span> </center>
 <br/>
+<center> <a href="{{url_for('userchangepassword')}}" class="button">Change Password</a> </span> </center>
+<br/>
+
 <!-- <center> <a href="/display_dept_details" class="button">show depts and divs</a> </span> </center> -->
 
 <!--<div class="bottom"> -->

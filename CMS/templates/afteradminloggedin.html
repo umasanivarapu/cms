@@ -21,7 +21,8 @@
 
 <span style="float:right"> <a href="/logout1" class="button">Logout</a> </span><br/>
 </div>
-<br/><br/><br/>
+<br/>
+    <div>{% include 'alert1.html'%}</div>
 
 <center>WELCOME!!</center>
 
@@ -33,7 +34,9 @@
 <center> <a href="{{url_for('adminsettings')}}" class="button">Account Settings</a> </span> </center>
 <br/>
 <center> <a href="{{url_for('adminprofileinfo')}}" class="button">Profile Information</a> </span> </center>
-
+<br/>
+<center> <a href="{{url_for('adminchangepassword')}}" class="button">Change Password</a> </span> </center>
+<br/>
 
 
 </body>

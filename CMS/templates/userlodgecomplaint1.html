@@ -26,8 +26,9 @@ CMSPortal
 <span style="float:right"> <a href="/logout" class="button">Logout</a> </span><br/>
 
 </div>
-
-<form action="{{ url_for('userlodgecomplaint2') }}"  method = "POST"  style="margin-left:auto;margin-right:auto align='center'">
+<br/><br/>
+<center>Select the department</center><br/>
+<form action="{{ url_for('userlodgecomplaint2') }}"  method = "POST"  align="center ">
 {% if(result) %}
 <select name="dept">
 {% for dept in result %}

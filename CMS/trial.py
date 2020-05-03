@@ -1,4 +1,4 @@
-from flask import Flask,render_template,request,session,redirect,url_for
+from flask import Flask,render_template,request,session,redirect,url_for,flash
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SelectField,IntegerField, TextField
@@ -30,6 +30,11 @@ class UserProfile(FlaskForm):
 	first_name = StringField('First Name',validators=[InputRequired(), Length(min=3, max=20)])
 	last_name = StringField('Last Name',validators=[InputRequired(), Length(min=3, max=20)])
 	age = IntegerField('Age',validators=[InputRequired()])
+	# department = StringField('Department', validators=[InputRequired(), Length(max=30)])
+
+class ChangePassword(FlaskForm):
+	new_password = PasswordField('New Password',validators=[InputRequired(), Length(min=8, max=80)])
+	confirm_new = PasswordField('Confirm New Password',validators=[InputRequired(), Length(min=8, max=80)])
 	# department = StringField('Department', validators=[InputRequired(), Length(max=30)])
 
 class AdminProfile(FlaskForm):
@@ -71,12 +76,9 @@ class AddRemoveDepartment(FlaskForm):
 class RemoveAdmin(FlaskForm):
 	adminemail = StringField('adminemail', validators=[InputRequired(), Length(max=30)])
 
-
-
 class DynamicDropdown(FlaskForm):
 	department = StringField('department',choices=[('a','a'),('b','b')])
 	division = StringField('division',choices=[])
-
 
 
 #-------------------------------------------- -------------------Initial Page---------------------------------------------------------------------------#
@@ -84,7 +86,10 @@ class DynamicDropdown(FlaskForm):
 @app.route('/')
 #@nocache
 def base1():
-	return render_template('base1.html')
+    session['username']=""
+    session['admin']=""
+    session['superuser']=""
+    return render_template('base1.html')
 
 #------------------------------------------------------------------User--------------------------------------------------------------------------------#
 
@@ -97,161 +102,262 @@ def user():
 @app.route('/signup', methods=['GET', 'POST'])
 #@nocache                       #Signup
 def signup():
-	form = RegisterForm()
-	if form.validate_on_submit():
-		# username = form.username.data
-		email = form.email.data
-		# password = generate_password_hash(form.password.data, "sha256") #converts password into it's hash
-		password = form.password.data
-		firstname = form.firstname.data
-		lastname  = form.lastname.data
-		age = form.age.data
-		user_name = email
-		session['username'] = email
-		print(user_name)
-		print(email)
-		print(password)
-		cursor.execute("insert into users values(%s,%s,%s,%s,%s)",(email,password,firstname,lastname,age))
-		db.commit()
-		return render_template('afteruserloggedin.html')
-
-	return render_template('signup.html',form = form)
+    form = RegisterForm()
+    if form.validate_on_submit():
+    # username = form.username.data
+        email = form.email.data
+        password = generate_password_hash(form.password.data, "sha256") #converts password into it's hash
+		#password = form.password.data
+        firstname = form.firstname.data
+        lastname  = form.lastname.data
+        age = form.age.data
+        sql = "select user_id,password from users where user_id = '{0}'"
+        cursor.execute(sql.format(email))
+        res = cursor.fetchall()
+        print(len(res))
+        if(res==[]):   
+            user_name = email
+            session['username'] = email
+            print(user_name)
+            print(email)
+            print(password)
+            cursor.execute("insert into users values(%s,%s,%s,%s,%s)",(email,password,firstname,lastname,age))
+            db.commit()
+            session.pop('_flashes', None)
+            flash("Successfully signed up",'error')
+            return render_template('afteruserloggedin.html')
+        else :
+            session.pop('_flashes', None)
+            flash("Username already exists",'error')
+            return redirect(url_for('userlogin'))
+            
+            
+    return render_template('signup.html',form = form)
 
 @app.route('/userlogin', methods=['GET','POST'])
 #@nocache                              #Login
 def userlogin():
-	if session['username'] != " ":
-		return render_template('afteruserloggedin.html')
-	else:
-		form = LoginForm()
+	
+    form = LoginForm()
 
-		if form.validate_on_submit():
-			username = form.username.data
-			password = form.password.data
-			remember = form.remember.data
-			user_name = username
-			session['username'] = username
-			print(user_name)
-			# hashed_pass = generate_password_hash(password, "sha256")
-			sql = "select user_id,password from users where user_id = '{0}'"
-			cursor.execute(sql.format(username))
-			res = cursor.fetchall()
-			# print (check_password_hash(hashed_pass, password))
-			print(username)
-			print(password)
-			print(remember)
-			if str(res[0][1]) == password:                      #else parts should be written
-				return render_template('afteruserloggedin.html')
-		return render_template('userlogin.html',form = form)
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        remember = form.remember.data
+        user_name = username
+        print(user_name)
+        # hashed_pass = generate_password_hash(password, "sha256")
+        sql = "select user_id,password from users where user_id = '{0}'"
+        cursor.execute(sql.format(username))
+        res = cursor.fetchall()
+        print(len(res))
+        if(res==[]):
+            session.pop('_flashes', None)
+            flash("Invalid Username",'error')
+            return redirect(url_for('userlogin'))
+            
+        else :
+
+        # print (check_password_hash(str(res[0][1]), password))
+            print(username)
+            print(password)
+            print(remember)
+            if check_password_hash(str(res[0][1]), password): 
+                session['username'] = username
+                session.pop('_flashes', None)
+                flash("Successfully Loggedin",'success')
+                return render_template('afteruserloggedin.html')
+            else :
+                session.pop('_flashes', None)
+                flash("Incorrect password",'error')
+                return redirect(url_for('userlogin'))
+
+    return render_template('userlogin.html',form = form)
 
 
 @app.route('/afteruserloggedin',methods = ['POST', 'GET'])
 #@nocache                               #user page
 def afteruserloggedin():
-	return render_template('afteruserloggedin.html')
+    if (session['username']!=""):
+        username = session['username']
+        return render_template('afteruserloggedin.html')
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('userlogin'))
+
 
 @app.route('/userprofileinfo',methods = ['POST', 'GET'])
 #@nocache      #user profile info
 def userprofileinfo():
-
-	sql = "select firstname,lastname,age from users where user_id = '{0}'"
-	cursor.execute(sql.format(session['username']))
-	resultx = cursor.fetchall()
-	result1 = dict()
-	result1["first_name"] = resultx[0][0]
-	result1["last_name"] = resultx[0][1]
-	result1["age"] = resultx[0][2]
-	result1["dept"] = "dept"
-	return render_template('userprofileinfo.html',result = result1)
+    if (session['username']!=""):
+        username = session['username']
+        sql = "select firstname,lastname,age from users where user_id = '{0}'"
+        cursor.execute(sql.format(session['username']))
+        resultx = cursor.fetchall()
+        result1 = dict()
+        result1["first_name"] = resultx[0][0]
+        result1["last_name"] = resultx[0][1]
+        result1["age"] = resultx[0][2]
+        result1["dept"] = "dept"
+        return render_template('userprofileinfo.html',result = result1)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('userlogin'))
 
 
 @app.route('/usersettings', methods=['GET','POST'])
 #@nocache                 #user settings
 def usersettings():
-	form = UserProfile()
+    if (session['username']!=""):
+    
+        form = UserProfile()
 
-	if form.validate_on_submit():
-		first_name = form.first_name.data
-		last_name = form.last_name.data
-		age = form.age.data
-		# dept =  form.department.data
-		cursor.execute("update users set firstname = %s where user_id = %s",(first_name,session['username']))
-		cursor.execute("update users set lastname = %s where user_id = %s",(last_name,session['username']))
-		cursor.execute("update users set age = %s where user_id = %s",(age,session['username']))
-		db.commit()
-		print(first_name)
-		print(last_name)
-		print(age)
-		# print(dept)
-		return render_template('afteruserloggedin.html')
+        if form.validate_on_submit():
+            first_name = form.first_name.data
+            last_name = form.last_name.data
+            age = form.age.data
+            # dept =  form.department.data
+            cursor.execute("update users set firstname = %s where user_id = %s",(first_name,session['username']))
+            cursor.execute("update users set lastname = %s where user_id = %s",(last_name,session['username']))
+            cursor.execute("update users set age = %s where user_id = %s",(age,session['username']))
+            db.commit()
+            print(first_name)
+            print(last_name)
+            print(age)
+            # print(dept)
+            return render_template('afteruserloggedin.html')
 
-	return render_template('usersettings.html',form = form)
+        return render_template('usersettings.html',form = form)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('userlogin'))
+
+
+@app.route('/userchangepassword', methods=['GET','POST'])
+#@nocache                 #user settings
+def userchangepassword():
+    if (session['username']!=""):
+    
+        form = ChangePassword()
+
+        if form.validate_on_submit():
+            new_password = form.new_password.data
+            confirm_new = form.confirm_new.data
+            # dept =  form.department.data
+            if(new_password==confirm_new):
+                new_password = generate_password_hash(new_password, "sha256") #converts password into it's hash
+                cursor.execute("update users set password = %s where user_id = %s",(new_password,session['username']))
+                db.commit()
+                print(new_password)
+                # print(dept)
+                session.pop('_flashes', None)
+                flash("Password Changed")
+                return render_template('afteruserloggedin.html')
+            else :
+                session.pop('_flashes', None)
+                flash("Entered passwords don't match")
+                return redirect(url_for('userchangepassword'))
+                
+        return render_template('userchangepassword.html',form = form)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('userlogin'))
 
 @app.route('/userlodgecomplaint1',methods=['POST','GET'])
 def userlodgecomplaint1():
-	# sql = "select category_ref,subcategory_ref from admin_cat order by category_ref"
-	sql = "select * from cat"
-	cursor.execute(sql)
-	result = cursor.fetchall()
-	# form = DynamicDropdown()
-	# cursor.execute(sql)
-	# result1 = cursor.fetchall()
-	# result1 = dict()
-	# result1 = [('a','1'),('b','2'),('c','3'),('d','1'),('e','2')]
-	return render_template('userlodgecomplaint1.html',result = result)
+    if (session['username']!=""):
+        sql = "select * from cat"
+        # sql = "select category_ref,subcategory_ref from admin_cat order by category_ref"
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        # form = DynamicDropdown()
+        # cursor.execute(sql)
+        # result1 = cursor.fetchall()
+        # result1 = dict()
+        # result1 = [('a','1'),('b','2'),('c','3'),('d','1'),('e','2')]
+        return render_template('userlodgecomplaint1.html',result = result)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('userlogin'))
+
 
 @app.route('/userlodgecomplaint2',methods=['POST','GET'])
 def userlodgecomplaint2():
-	var1 = request.form.get('dept')
-	print(var1)
-	sql = "select subcategory_ref from admin_cat where category_ref = '{0}' "    #query for subcat fetching
-	cursor.execute(sql.format(var1))
-	result = cursor.fetchall()
-	# form1 = LodgeComplaint()
-	res_dic = []
-	for i in range(len(result)):
-		element = (str(i+1),str(result[i][0]))
-		res_dic.append(element)
-	print(res_dic)
-	# form1.subcategory.choices = res_dic
-	# print(form1.errors)
-	# if form1.validate_on_submit():
-		# subject = form1.subject.data
-		# summary = form1.summary.data
-		# subcategory = form1.subcategory.data
-		# print(subject)
-		# print(summary)
-		# print(subcategory)
-		# print(var1)
-		# status = 0
-		# cursor.execute("insert into complaint(category_ref,subcat_ref,complaint,status,user_id_ref,subject) values(%s,%s,%s,%s,%s,%s)",(category,subcategory,summary,status,session['username']))
-		# db.commit()
-		# return render_template('afteruserloggedin.html')
-	return render_template('userlodgecomplaint2.html',result = result,value = var1)      #have to add value of sel for display here
+    if (session['username']!=""):
+
+        var1 = request.form.get('dept')
+        print(var1)
+        sql = "select subcategory_ref from admin_cat where category_ref = '{0}' "    #query for subcat fetching
+        cursor.execute(sql.format(var1))
+        result = cursor.fetchall()
+        # form1 = LodgeComplaint()
+        res_dic = []
+        for i in range(len(result)):
+            element = (str(i+1),str(result[i][0]))
+            res_dic.append(element)
+        print(res_dic)
+        # form1.subcategory.choices = res_dic
+        # print(form1.errors)
+        # if form1.validate_on_submit():
+            # subject = form1.subject.data
+            # summary = form1.summary.data
+            # subcategory = form1.subcategory.data
+            # print(subject)
+            # print(summary)
+            # print(subcategory)
+            # print(var1)
+            # status = 0
+            # cursor.execute("insert into complaint(category_ref,subcat_ref,complaint,status,user_id_ref,subject) values(%s,%s,%s,%s,%s,%s)",(category,subcategory,summary,status,session['username']))
+            # db.commit()
+            # return render_template('afteruserloggedin.html')
+        return render_template('userlodgecomplaint2.html',result = result,value = var1)      #have to add value of sel for display here
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('userlogin'))
 
 
 @app.route('/userlodgecomplaint3/<department>/', methods=['POST','GET'])
 #@nocache                  # lodge complaint
 def userlodgecomplaint3(department):
-	variable2 = request.form.get('subcategory')
-	department = str(department)
-	print(variable2)
-	print(department)
-	return render_template('userlodgecomplaint3.html',val=department,val1 = variable2)
+    if (session['username']!=""):
+        variable2 = request.form.get('subcategory')
+        department = str(department)
+        print(variable2)
+        print(department)
+        return render_template('userlodgecomplaint3.html',val=department,val1 = variable2)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('userlogin'))
 
 @app.route('/complaintsubmitted/<dept>/<div1>',methods = ['GET','POST'])
 def complaintsubmitted(dept,div1):
-	# print(passing)
-	# (dept,div) = passing.split(',')
-	category = str(dept)
-	subcategory = str(div1)
-	subject = request.form.get('subject')
-	summary = request.form.get('summary')
-	status  = 0
-	cursor.execute("insert into complaint(category_ref,subcat_ref,complaint,status,user_id_ref,subject) values(%s,%s,%s,%s,%s,%s)",(category,subcategory,summary,status,session['username'],subject))
-	print(db.commit())
-	#possibly add a line to check commit and display pass or fail in value
-	return render_template('complaintsubmitted.html')
+    if (session['username']!=""): 
+        # print(passing)
+        # (dept,div) = passing.split(',')
+        category = str(dept)
+        subcategory = str(div1)
+        subject = request.form.get('subject')
+        print(subject)
+        summary = request.form.get('summary')
+        status  = 0
+        cursor.execute("insert into complaint(category_ref,subcat_ref,complaint,status,user_id_ref,subject) values(%s,%s,%s,%s,%s,%s)",(category,subcategory,summary,status,session['username'],subject))
+        print(db.commit())
+        #possibly add a line to check commit and display pass or fail in value
+        session.pop('_flashes', None)
+        flash("Success : Complaint Lodged")
+        return redirect(url_for('afteruserloggedin'))
+
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('userlogin'))
 
 # result1 = dict()
 # i=0
@@ -261,31 +367,42 @@ def complaintsubmitted(dept,div1):
 @app.route('/userhistory',methods = ['POST','GET'])
 #@nocache                          # complaint history
 def userhistory():
-	sql = "select complaint_id,complaint,status,category_ref,subcat_ref,subject from complaint where user_id_ref = '{0}'"
-	cursor.execute(sql.format(session['username']))
-	result1 = cursor.fetchall()
-	return render_template('userhistory.html',result = result1)
+    if (session['username']!=""):	
+        sql = "select complaint_id,complaint,status,category_ref,subcat_ref,subject from complaint where user_id_ref = '{0}'"
+        cursor.execute(sql.format(session['username']))
+        result1 = cursor.fetchall()
+        return render_template('userhistory.html',result = result1)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('userlogin'))
 
 @app.route('/userresolvecomplaint/<cid>')
 #@nocache
 def userresolvecomplaint(cid):
-	result1 = dict()
-	cid = int(cid)
-	try:
-		sql = "select category_ref,subcat_ref,complaint,status from complaint where complaint_id = '{0}'"
-		cursor.execute(sql.format(cid))
-		res = cursor.fetchall()
-		result1["dept"] = res[0][0]
-		result1["division"] = res[0][1]
-		result1["complaint"] = res[0][2]
-		if res[0][3] == 1:
-			result1["statusquo"] = "YES"
-		else:
-			result1["statusquo"] = "NO"
-		return render_template('userresolvecomplaint.html' , result = result1)
-	except:
-		cursor.rollback()
-		print("check for error")
+    if (session['username']!=""):	
+
+        result1 = dict()
+        cid = int(cid)
+        try:
+            sql = "select category_ref,subcat_ref,complaint,status from complaint where complaint_id = '{0}'"
+            cursor.execute(sql.format(cid))
+            res = cursor.fetchall()
+            result1["dept"] = res[0][0]
+            result1["division"] = res[0][1]
+            result1["complaint"] = res[0][2]
+            if res[0][3] == 1:
+                result1["statusquo"] = "YES"
+            else:
+                result1["statusquo"] = "NO"
+            return render_template('userresolvecomplaint.html' , result = result1)
+        except:
+            cursor.rollback()
+            print("check for error")
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('userlogin'))
 
 
 @app.route('/logout')
@@ -304,98 +421,156 @@ def logout():
 @app.route('/admin')
 ##@nocache                                           #login
 def admin():
-	session['admin'] = " "
+	session['admin'] = ""
 	return render_template('admin.html')
 
 
 @app.route('/adminlogin', methods=['GET','POST'])
 #@nocache                            #Login
 def adminlogin():
-	form = LoginForm()
-
-	if form.validate_on_submit():
-		username = form.username.data
-		password = form.password.data
-		remember = form.remember.data
-		session['admin'] = username
-		# hashed_pass = generate_password_hash(password, "sha256")
-		sql = "select password from admin where admin_id = '{0}'"
-		cursor.execute(sql.format(username))
-		res = cursor.fetchall()
-
-		# print (check_password_hash(hashed_pass, password))
-		print(username)
-		print(password)
-		print(remember)
-		if(res[0][0] == str(password)):   # have to write else conditions.
-			return render_template('afteradminloggedin.html')
-	return render_template('adminlogin.html',form = form)
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        remember = form.remember.data
+        sql = "select password from admin where admin_id = '{0}'"
+        cursor.execute(sql.format(username))
+        res = cursor.fetchall()
+        if(res==[]):
+            session.pop('_flashes', None)
+            flash("Invalid Admin Id")
+            return redirect(url_for('adminlogin'))
+        else : 
+            if check_password_hash(str(res[0][0]), password): 
+                session['admin'] = username
+                session.pop('_flashes', None)
+                flash("Successfully Loggedin")    # have to write else conditions.
+                return render_template('afteradminloggedin.html')
+            else : 
+                session.pop('_flashes', None)
+                flash("Incorrect Password")    # have to write else conditions.
+                return render_template('adminlogin.html',form=form)
+    return render_template('adminlogin.html',form = form)
 
 
 @app.route('/afteradminloggedin')
 #@nocache                            #Admin Page
 def afteradminloggedin():
-    return render_template('afteradminloggedin.html')
+    if (session['admin']!=""):	
+        return render_template('afteradminloggedin.html')
+    else : 
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('adminlogin'))
 
-
+        
 @app.route('/adminsettings', methods=['GET','POST'])
 #@nocache                    # Settings
 def adminsettings():
-	form = AdminProfile()
+    if (session['admin']!=""):	
 
-	if form.validate_on_submit():
-		first_name = form.first_name.data
-		last_name = form.last_name.data
-		age = form.age.data
-		# dept =  form.department.data
-		print(first_name)
-		print(last_name)
-		print(age)
-		# print(dept)
-		cursor.execute("update admin set name = %s where admin_id = %s",(first_name,session['admin']))
-		cursor.execute("update admin set lastname = %s where admin_id = %s",(last_name,session['admin']))
-		cursor.execute("update admin set age = %s where admin_id = %s",(age,session['admin']))
-		db.commit()
-		return render_template('afteradminloggedin.html')
+        form = AdminProfile()
 
-	return render_template('adminsettings.html',form = form)
+        if form.validate_on_submit():
+            first_name = form.first_name.data
+            last_name = form.last_name.data
+            age = form.age.data
+            # dept =  form.department.data
+            print(first_name)
+            print(last_name)
+            print(age)
+            # print(dept)
+            cursor.execute("update admin set name = %s where admin_id = %s",(first_name,session['admin']))
+            cursor.execute("update admin set lastname = %s where admin_id = %s",(last_name,session['admin']))
+            cursor.execute("update admin set age = %s where admin_id = %s",(age,session['admin']))
+            db.commit()
+            return render_template('afteradminloggedin.html')
+
+        return render_template('adminsettings.html',form = form)
+    else : 
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('adminlogin'))
+
 
 @app.route('/adminprofileinfo',methods = ['POST', 'GET'])
 #@nocache   			#Admin Profile Info
 def adminprofileinfo():
-	sql = "select name,lastname,age from admin where admin_id='{0}'"
-	cursor.execute(sql.format(session['admin']))
-	res = cursor.fetchall()
-	print(session['admin'])
-	if(res == []):
-		print("list is empty")
-	result1 = dict()
-	result1["first_name"] = res[0][0]
-	result1["last_name"] = res[0][1]
-	result1["age"] = res[0][2]
-	result1["dept"] = "dept to be decided"
-	return render_template('adminprofileinfo.html',result = result1)
+    if (session['admin']!=""):	
+
+        sql = "select name,lastname,age from admin where admin_id='{0}'"
+        cursor.execute(sql.format(session['admin']))
+        res = cursor.fetchall()
+        print(session['admin'])
+        if(res == []):
+            print("list is empty")
+        result1 = dict()
+        result1["first_name"] = res[0][0]
+        result1["last_name"] = res[0][1]
+        result1["age"] = res[0][2]
+        result1["dept"] = "dept to be decided"
+        return render_template('adminprofileinfo.html',result = result1)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('adminlogin'))
+
+@app.route('/adminchangepassword', methods=['GET','POST'])
+#@nocache                 #user settings
+def adminchangepassword():
+    if (session['admin']!=""):
+    
+        form = ChangePassword()
+
+        if form.validate_on_submit():
+            new_password = form.new_password.data
+            confirm_new = form.confirm_new.data
+
+            # dept =  form.department.data
+            if(new_password==confirm_new):
+                new_password= generate_password_hash(new_password, "sha256") #converts password into it's hash
+                cursor.execute("update admin set password = %s where admin_id = %s",(new_password,session['admin']))
+                db.commit()
+                print(new_password)
+                # print(dept)
+                return render_template('afteradminloggedin.html')
+            else :
+                session.pop('_flashes', None)
+                flash("Entered passwords don't match")
+                return redirect(url_for('adminchangepassword'))
+                
+        return render_template('adminchangepassword.html',form = form)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('adminlogin'))
 
 @app.route('/adminresolvecomplaint/<cid>')
 #@nocache                                           #Resolve Complaint
 def adminresolvecomplaint(cid):
-	result1 = dict()
-	cid = int(cid)
-	try:
-		sql = "select category_ref,subcat_ref,complaint,status from complaint where complaint_id = '{0}'"
-		cursor.execute(sql.format(cid))
-		res = cursor.fetchall()
-		result1["dept"] = res[0][0]
-		result1["division"] = res[0][1]
-		result1["complaint"] = res[0][2]
-		if res[0][3] == 1:
-			result1["statusquo"] = "YES"
-		else:
-			result1["statusquo"] = "NO"
-	except:
-		cursor.rollback()
-		print("admin error db")
-	return render_template('adminresolvecomplaint.html' , result = result1)
+    if (session['admin']!=""):	
+        result1 = dict()
+        cid = int(cid)
+        try:
+            sql = "select category_ref,subcat_ref,complaint,status from complaint where complaint_id = '{0}'"
+            cursor.execute(sql.format(cid))
+            res = cursor.fetchall()
+            result1["dept"] = res[0][0]
+            result1["division"] = res[0][1]
+            result1["complaint"] = res[0][2]
+            if res[0][3] == 1:
+                result1["statusquo"] = "YES"
+            else:
+                result1["statusquo"] = "NO"
+        except:
+            cursor.rollback()
+            print("admin error db")
+        return render_template('adminresolvecomplaint.html' , result = result1)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('adminlogin'))
+
 
 result1 = dict()
 i=0
@@ -405,10 +580,15 @@ for i in range(1,1000):
 @app.route('/admincomplainthistory',methods = ['POST','GET'])
 #@nocache		               #Admin history
 def admincomplainthistory():
-	sql = "select complaint_id,complaint,status,complaint.category_ref,subcat_ref,subject from admin_cat INNER JOIN complaint  ON (admin_cat.category_ref = complaint.category_ref AND admin_cat.subcategory_ref = complaint.subcat_ref)where admin_ref = '{0}'"
-	cursor.execute(sql.format(session['admin']))
-	result1 = cursor.fetchall()
-	return render_template('admincomplainthistory.html',result = result1)
+    if (session['admin']!=""):	
+        sql = "select complaint_id,complaint,status,complaint.category_ref,subcat_ref,subject from admin_cat INNER JOIN complaint  ON (admin_cat.category_ref = complaint.category_ref AND admin_cat.subcategory_ref = complaint.subcat_ref)where admin_ref = '{0}'"
+        cursor.execute(sql.format(session['admin']))
+        result1 = cursor.fetchall()
+        return render_template('admincomplainthistory.html',result = result1)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('adminlogin'))
 
 
 
@@ -417,18 +597,6 @@ def admincomplainthistory():
 def logout1():
 	session.pop('admin',None)
 	return redirect(url_for('base1'))
-
-@app.route('/display_deptwise_heads')
-def display_deptwise_heads():
-	sql = "select subcat.category_ref,subcat.subcategory,admin_ref from subcat left join admin_cat on(admin_cat.category_ref = subcat.category_ref and admin_cat.subcategory_ref = subcat.subcategory)"
-	cursor.execute(sql)
-	result = cursor.fetchall()
-	return render_template('sshow_dept_heads.html',result = result)
-
-
-
-
-
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------Super Admin------------------------------------------------------------------------#
@@ -442,230 +610,334 @@ def superadmin():
 @app.route('/superadminlogin', methods=['GET','POST'])
 #@nocache                            #Login
 def superadminlogin():
-	form = LoginForm()
-
-	if form.validate_on_submit():
-		username = form.username.data
-		password = form.password.data
-		remember = form.remember.data
-		session['superuser'] = username
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        remember = form.remember.data
 		# hashed_pass = generate_password_hash(password, "sha256")
 		# print (check_password_hash(hashed_pass, password))
-		sql = "select password from super_admin where superadmin = '{0}'"
-		cursor.execute(sql.format(username))
-		res = cursor.fetchall()
-		print(username)
-		print(password)
-		print(remember)
-		if res[0][0] == str(password):
-			return render_template('aftersuperadminloggedin.html')
-	return render_template('superadminlogin.html',form = form)
+        sql = "select password from super_admin where superadmin = '{0}'"
+        cursor.execute(sql.format(username))
+        res = cursor.fetchall()
+        if(res==[]) :
+            session.pop('_flashes', None)
+            flash("Invali SuperAdmin Id")
+            render_template('superadminlogin',form=form)
+        else :
+
+            if check_password_hash(res[0][0],password):
+                session['superuser'] = username
+
+                session.pop('_flashes', None)
+                flash("Successfully Loggedin")
+                return render_template('aftersuperadminloggedin.html')
+            else :
+                session.pop('_flashes', None)
+                flash("Invali password")
+                render_template('superadminlogin.html',form=form)
+    return render_template('superadminlogin.html',form = form)
 
 @app.route('/aftersuperadminloggedin')
 #@nocache
 def aftersuperadminloggedin():
-    return render_template('aftersuperadminloggedin.html')
+    if (session['superuser']!=""):	
+        return render_template('aftersuperadminloggedin.html')
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('superadminlogin'))
 
 
 @app.route('/superadmin_addadmin',methods=['GET','POST'])
 #@nocache
 def superadmin_addadmin():
-	form = AddRemoveAdmin()
+    if (session['superuser']!=""):	
+  
+        form = AddRemoveAdmin()
+        if form.validate_on_submit():
+            email = form.email.data
+            first_name = form.first_name.data
+            last_name = form.last_name.data
+            age = form.age.data
+            dept = form.department.data
+            division = form.division.data
+            passcode = form.passcode.data
+            cursor.execute("insert into admin values(%s,%s,%s,%s,%s)",(email,passcode,first_name,last_name,age))
+            sql = "select * from subcat where subcategory = '{0}' and category_ref = '{1}'"
+            cursor.execute(sql.format(division,dept))
+            res = cursor.fetchall()
+            if res!=[]:
+                cursor.execute("insert into admin_cat values(%s,%s,%s)",(email,dept,division))
+                db.commit()
+                print(first_name)
+                print(last_name)
+                print(age)
+                print(dept)
+                print(division)
+                return render_template('aftersuperadminloggedin.html')
+            else:
+                return("choose correct cat and subcat pair")
 
-	if form.validate_on_submit():
-		email = form.email.data
-		first_name = form.first_name.data
-		last_name = form.last_name.data
-		age = form.age.data
-		dept = form.department.data
-		division = form.division.data
-		passcode = form.passcode.data
-		cursor.execute("insert into admin values(%s,%s,%s,%s,%s)",(email,passcode,first_name,last_name,age))
-		sql = "select * from subcat where subcategory = '{0}' and category_ref = '{1}'"
-		cursor.execute(sql.format(division,dept))
-		res = cursor.fetchall()
-		if res!=[]:
-			cursor.execute("insert into admin_cat values(%s,%s,%s)",(email,dept,division))
-			db.commit()
-			print(first_name)
-			print(last_name)
-			print(age)
-			print(dept)
-			print(division)
-			return render_template('aftersuperadminloggedin.html')
-		else:
-			return("choose correct cat and subcat pair")
+        return render_template('superadminaddadmin.html',form = form)
+    
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('superadminlogin'))
 
-	return render_template('superadminaddadmin.html',form = form)
 
 @app.route('/superadminprofileinfo',methods = ['POST', 'GET'])
 #@nocache
 def superadminprofileinfo():
-	sql = "select * from super_admin where superadmin = '{0}'"
-	cursor.execute(sql.format(session['superuser']))
-	res = cursor.fetchall()
-	result1 = dict()
-	result1["first_name"] = res[0][2]
-	result1["last_name"] = "to be added to database"
-	result1["age"] = "to be added "
-	result1["dept"] = "to be added to databse"
-	return render_template('superadminprofileinfo.html',result = result1)
+    if (session['superuser']!=""):	
+        sql = "select * from super_admin where superadmin = '{0}'"
+        cursor.execute(sql.format(session['superuser']))
+        res = cursor.fetchall()
+        result1 = dict()
+        result1["first_name"] = res[0][2]
+        result1["last_name"] = "to be added to database"
+        result1["age"] = "to be added "
+        result1["dept"] = "to be added to databse"
+        return render_template('superadminprofileinfo.html',result = result1)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('superadminlogin'))
+
+@app.route('/superadminchangepassword', methods=['GET','POST'])
+#@nocache                 #user settings
+def superadminchangepassword():
+    if (session['superuser']!=""):
+    
+        form = ChangePassword()
+
+        if form.validate_on_submit():
+            new_password = form.new_password.data
+            confirm_new = form.confirm_new.data
+            # dept =  form.department.data
+            if(new_password==confirm_new):
+                new_password = generate_password_hash(new_password, "sha256") #converts password into it's hash
+                cursor.execute("update super_admin set password = %s where superadmin = %s",(new_password,session['superuser']))
+                db.commit()
+                print(new_password)
+                # print(dept)
+                return render_template('aftersuperadminloggedin.html')
+            else :
+                session.pop('_flashes', None)
+                flash("Entered passwords don't match")
+                return redirect(url_for('superadminchangepassword'))
+                
+        return render_template('superadminchangepassword.html',form = form)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('superadminlogin'))
+
 
 @app.route('/superadmin_removeadmin',methods=['GET','POST'])
 #@nocache
 def superadmin_removeadmin():
-	form = RemoveAdmin()
+    if (session['superuser']!=""):	
+        form = RemoveAdmin()
 
-	if form.validate_on_submit():
-		adminemail = form.adminemail.data
-		# first_name = form.first_name.data
-		# last_name = form.last_name.data
-		# age = form.age.data
-		# dept = form.department.data
-		# division = form.division.data
-		# print(first_name)
-		# print(last_name)
-		# print(age)
-		# print(dept)
-		# print(division)
-		sql = "select admin_id from admin where admin_id = '{0}'"
-		cursor.execute(sql.format(adminemail))
-		res = cursor.fetchall()
-		if(res!=[]):
-			sql = "delete from admin where admin_id = '{0}'"
-			cursor.execute(sql.format(adminemail))
-			db.commit()
-			return render_template('aftersuperadminloggedin.html')
-		else:
-			return("enter correct admin email")
+        if form.validate_on_submit():
+            adminemail = form.adminemail.data
+            # first_name = form.first_name.data
+            # last_name = form.last_name.data
+            # age = form.age.data
+            # dept = form.department.data
+            # division = form.division.data
+            # print(first_name)
+            # print(last_name)
+            # print(age)
+            # print(dept)
+            # print(division)
+            sql = "select admin_id from admin where admin_id = '{0}'"
+            cursor.execute(sql.format(adminemail))
+            res = cursor.fetchall()
+            if(res!=[]):
+                sql = "delete from admin where admin_id = '{0}'"
+                cursor.execute(sql.format(adminemail))
+                db.commit()
+                return render_template('aftersuperadminloggedin.html')
+            else:
+                return("enter correct admin email")
 
-	return render_template('superadminremoveadmin.html',form = form)
+        return render_template('superadminremoveadmin.html',form = form)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('superadminlogin'))
+
 
 @app.route('/superadmin_adddivision', methods =['GET','POST'])
 #@nocache
 def superadmin_adddivision():
-	form = AddRemoveDivision()
+    if (session['superuser']!=""):	
+        form = AddRemoveDivision()
 
-	if form.validate_on_submit():
-		dept = form.department.data
-		division = form.division.data
-		print(dept)
-		print(division)
-		sql = "select * from cat where category = '{0}'"
-		cursor.execute(sql.format(dept))
-		res = cursor.fetchall()
-		if(res!=[]):
-			sql = "select * from subcat where category_ref = '{0}' and subcategory='{1}'"
-			cursor.execute(sql.format(dept,division))
-			res1 = cursor.fetchall()
-			if(res1==[]):
-				cursor.execute("insert into subcat values(%s,%s)",(division,dept))
-				db.commit()
-				return render_template('aftersuperadminloggedin.html')
-			else:
-				return("already pair exists")
-		else:
-			return("no such category exists")
+        if form.validate_on_submit():
+            dept = form.department.data
+            division = form.division.data
+            print(dept)
+            print(division)
+            sql = "select * from cat where category = '{0}'"
+            cursor.execute(sql.format(dept))
+            res = cursor.fetchall()
+            if(res!=[]):
+                sql = "select * from subcat where category_ref = '{0}' and subcategory='{1}'"
+                cursor.execute(sql.format(dept,division))
+                res1 = cursor.fetchall()
+                if(res1==[]):
+                    cursor.execute("insert into subcat values(%s,%s)",(division,dept))
+                    db.commit()
+                    return render_template('aftersuperadminloggedin.html')
+                else:
+                    return("already pair exists")
+            else:
+                return("no such category exists")
 
 
-	return render_template('superadminadddivision.html', form=form)
+        return render_template('superadminadddivision.html', form=form)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('superadminlogin'))
 
 @app.route('/superadmin_removedivision',methods=['GET','POST'])
 #@nocache
 def superadmin_removedivision():
-	form = AddRemoveDivision()
+    if (session['superuser']!=""):	
+    
+        form = AddRemoveDivision()
 
-	if form.validate_on_submit():
-		dept = form.department.data
-		division = form.division.data
-		print(dept)
-		print(division)
-		sql = "select * from cat where category = '{0}'"
-		cursor.execute(sql.format(dept))
-		res = cursor.fetchall()
-		if(res!=[]):
-			sql = "select * from subcat where category_ref = '{0}' and subcategory='{1}'"
-			cursor.execute(sql.format(dept,division))
-			res1 = cursor.fetchall()
-			if(res1!=[]):
-				# cursor.execute("insert into subcat values(%s,%s)",(dept,division))
-				sql1 = "delete from subcat where subcategory = '{0}' and category_ref = '{1}'"
-				cursor.execute(sql1.format(division,dept))
-				db.commit()
-				return render_template('aftersuperadminloggedin.html')
-			else:
-				return("that pair donot exist")
-		else:
-			return("no such category exists")
+        if form.validate_on_submit():
+            dept = form.department.data
+            division = form.division.data
+            print(dept)
+            print(division)
+            sql = "select * from cat where category = '{0}'"
+            cursor.execute(sql.format(dept))
+            res = cursor.fetchall()
+            if(res!=[]):
+                sql = "select * from subcat where category_ref = '{0}' and subcategory='{1}'"
+                cursor.execute(sql.format(dept,division))
+                res1 = cursor.fetchall()
+                if(res1!=[]):
+                    # cursor.execute("insert into subcat values(%s,%s)",(dept,division))
+                    sql1 = "delete from subcat where subcategory = '{0}' and category_ref = '{1}'"
+                    cursor.execute(sql1.format(division,dept))
+                    db.commit()
+                    return render_template('aftersuperadminloggedin.html')
+                else:
+                    return("that pair donot exist")
+            else:
+                return("no such category exists")
 
 
 
-	return render_template('superadminremovedivision.html',form=form)
+        return render_template('superadminremovedivision.html',form=form)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('superadminlogin'))
+
 
 @app.route('/superadmin_adddepartment',methods=['GET','POST'])
 #@nocache
 def superadmin_adddepartment():
-	form = AddRemoveDepartment()
+    if (session['superuser']!=""):	
 
-	if form.validate_on_submit():
-		dept = form.department.data
-		print(dept)
-		sql = "select * from cat where category = '{0}'"
-		cursor.execute(sql.format(dept))
-		res = cursor.fetchall()
-		if(res!=[]):
-			return("already category  exists")
+        form = AddRemoveDepartment()
 
-		else:
-			cursor.execute("insert into cat values(%s)",(dept))
-			db.commit()
-			return render_template('aftersuperadminloggedin.html')
+        if form.validate_on_submit():
+            dept = form.department.data
+            print(dept)
+            sql = "select * from cat where category = '{0}'"
+            cursor.execute(sql.format(dept))
+            res = cursor.fetchall()
+            if(res!=[]):
+                return("already category  exists")
+
+            else:
+                cursor.execute("insert into cat values(%s)",(dept))
+                db.commit()
+                return render_template('aftersuperadminloggedin.html')
 
 
 
-	return render_template('superadminadddepartment.html',form=form)
+        return render_template('superadminadddepartment.html',form=form)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('superadminlogin'))
 
 
 @app.route('/superadmin_removedepartment', methods=['GET','POST'])
 #@nocache
 def superadmin_removedepartment():
-	form = AddRemoveDepartment()
+    if (session['superuser']!=""):	
+        form = AddRemoveDepartment()
 
-	if form.validate_on_submit():
-		dept = form.department.data
-		print(dept)
-		sql = "select * from cat where category = '{0}'"
-		cursor.execute(sql.format(dept))
-		res = cursor.fetchall()
-		if(res!=[]):
-			sql1 = "delete from subcat where category_ref"
-			sql1 = "delete from cat where category = '{0}'"
-			cursor.execute(sql1.format(dept))
-			db.commit()
-			return render_template('aftersuperadminloggedin.html')
-		else:
-			return("no such category  exists")
+        if form.validate_on_submit():
+            dept = form.department.data
+            print(dept)
+            sql = "select * from cat where category = '{0}'"
+            cursor.execute(sql.format(dept))
+            res = cursor.fetchall()
+            if(res!=[]):
+                sql1 = "delete from subcat where category_ref"
+                sql1 = "delete from cat where category = '{0}'"
+                cursor.execute(sql1.format(dept))
+                db.commit()
+                return render_template('aftersuperadminloggedin.html')
+            else:
+                return("no such category  exists")
 
 
-	return render_template('superadminremovedepartment.html',form=form)
+        return render_template('superadminremovedepartment.html',form=form)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('superadminlogin'))
 
 @app.route('/superadminsettings', methods=['GET','POST'])
 #@nocache
 def superadminsettings():
-	form = SuperAdminProfile()
+    if (session['superuser']!=""):	
+        form = SuperAdminProfile()
 
-	if form.validate_on_submit():
-		first_name = form.first_name.data
-		last_name = form.last_name.data
-		age = form.age.data
-		dept =  form.department.data
-		print(first_name)
-		print(last_name)
-		print(age)
-		print(dept)
-		return render_template('aftersuperadminloggedin.html')
+        if form.validate_on_submit():
+            first_name = form.first_name.data
+            last_name = form.last_name.data
+            age = form.age.data
+            dept =  form.department.data
+            print(first_name)
+            print(last_name)
+            print(age)
+            print(dept)
+            return render_template('aftersuperadminloggedin.html')
 
-	return render_template('superadminsettings.html',form = form)
+        return render_template('superadminsettings.html',form = form)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('superadminlogin'))
+
+@app.route('/display_deptwise_heads')
+def display_deptwise_heads():
+    if (session['superuser']!=""):	
+        sql = "select subcat.category_ref,subcat.subcategory,admin_ref from subcat left join admin_cat on(admin_cat.category_ref = subcat.category_ref and admin_cat.subcategory_ref = subcat.subcategory)"
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        return render_template('show_dept_heads.html',result = result)
+
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('adminlogin'))
+
 
 @app.route('/logout2')
 #@nocache

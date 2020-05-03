@@ -20,6 +20,7 @@
 </div>
 
 <br/><br/>
+    <div>{% include 'alert1.html'%}</div>
 
 
 <center>WELCOME!!</center>
@@ -33,10 +34,13 @@
     <center><a href="{{ url_for('superadmin_adddepartment') }}" class="button">Add Department</a></span></center><br/>
 	<center><a href="{{ url_for('superadmin_removedepartment') }}" class="button">Remove Department</a></span></center><br/>
 	<center> <a href="{{url_for('superadminsettings')}}" class="button">Account Settings</a> </span> </center><br/>
-  <center> <a href="{{url_for('superadminprofileinfo')}}" class="button">Profile Information</a> </span> </center>
+  <center> <a href="{{url_for('superadminprofileinfo')}}" class="button">Profile Information</a> </span> </center><br/>
+<center> <a href="{{url_for('superadminchangepassword')}}" class="button">Change Password</a> </span> </center>
+<br/>
 
-  <span style = "float:right"> <a href="/display_deptwise_heads" class="button">show admin details</a> </span>
 
+
+<center> <a href="/display_deptwise_heads" class="button">View All Admins</a> </span> </center>
 
 
 

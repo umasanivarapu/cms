@@ -11,6 +11,14 @@
   padding: 2px 6px 2px 6px;
 
 }
+.button1 {
+  font: 20px Roboto;
+  text-decoration: none;
+  color: #333333;
+  padding: 2px 6px 2px 6px;
+
+}
+
 </style>
 </head>
 <body>
@@ -30,16 +38,18 @@
 <form action="{{ url_for('afteradminloggedin') }}" style="margin-left:auto;margin-right:auto align='center'">
 <center>
   <table border = 5>
-    <th>complaint_id</th>
-    <th>DEPARTMANT</th>
-    <th>DIVISION</th>
-    <th>subject</th>
+    <th>Complaint Id</th>
+	 <th>Subject</th>
+
+    <th>Department</th>
+    <th>Division</th>
     {% for  row in result %}
     <tr>
       <th> {{ row[0]}}</th>
+	        <td> <a href="{{url_for('adminresolvecomplaint',cid = row[0])}}" class="button1">{{row[5]}}</a></td>
+
       <th> {{ row[3]}} </th>
       <th> {{ row[4]}} </th>
-      <td> <a href="{{url_for('adminresolvecomplaint',cid = row[0])}}" class="button">{{row[5]}}</a></td>
     </tr>
     {% endfor %}
   </table>

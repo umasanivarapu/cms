@@ -42,10 +42,12 @@
 </center>
 </form>
  -->
-<center>Department : {{value}} </center>
+<center>Department chosen: {{value}} </center><br/>
+<center>Choose the division </center>
 
 
-<form method = "POST" action="{{ url_for('userlodgecomplaint3',department = value) }}" style="margin-left:auto;margin-right:auto align='center'">
+<form method = "POST" action="{{ url_for('userlodgecomplaint3',department = value) }}" align="center">
+
 {% if(result) %}
 <select name="subcategory">
 {% for divisioned in result %}

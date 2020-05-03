@@ -14,6 +14,6 @@ app.secret_key = 'secret'
 #################### connect to database ###############
 #!/usr/bin/python
 import psycopg2
-db = psycopg2.connect(database="cms", user = "postgres", password = "postgres", host = "127.0.0.1", port = "5432")
+db = psycopg2.connect(database="cms", user = "postgres", password = "asdfgh", host = "127.0.0.1", port = "5432")
 #username for database, password, databasename
 cursor = db.cursor()

@@ -1,0 +1,20 @@
+{% extends 'bootstrap/base.html' %} 
+{% block content %}
+      {% with messages = get_flashed_messages() %}
+
+			{% if messages %}
+			{% for message in messages %}
+				<div class="row">
+				<div class="span2">
+				<div class="alert alert-warning alert-dismissible" role="alert"  align="center">
+			  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			  <!-- <strong>Title</strong> --> {{ message }}
+			  </div>
+			  </div>
+			  </div>
+			{% endfor %}
+        {% endif %}
+      {% endwith %}
+{% endblock %}
+
+
