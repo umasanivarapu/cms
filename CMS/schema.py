@@ -28,7 +28,7 @@ cursor.execute(table_create)
 table_create = "create table users(user_id text primary key,password text,firstname text,lastname text, age int);"
 cursor.execute(table_create)
 
-table_create = "create table complaint(complaint_id serial primary key,category_ref text,subcat_ref text,complaint text,status int,user_id_ref text, subject text,foreign key(subcat_ref,category_ref) references subcat(subcategory,category_ref) ON DELETE CASCADE, foreign key (user_id_ref) references users ON DELETE CASCADE);"
+table_create = "create table complaint(complaint_id serial primary key,category_ref text,subcat_ref text,complaint text,status text,user_id_ref text, subject text,foreign key(subcat_ref,category_ref) references subcat(subcategory,category_ref) ON DELETE CASCADE, foreign key (user_id_ref) references users ON DELETE CASCADE);"
 cursor.execute(table_create)
 
 

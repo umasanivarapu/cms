@@ -7,9 +7,12 @@ from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
 from flask_mail import Mail,Message
 from itsdangerous import URLSafeTimedSerializer,SignatureExpired
+from OpenSSL import SSL
 # from nocache import nocache
 
-
+context = SSL.Context(SSL.PROTOCOL_TLSv1_2)
+context.use_privatekey_file('server.key')
+context.use_certificate_file('server.crt')
 from app import app, cursor, db
 app = Flask(__name__)
 app.config['MAIL_SERVER']='smtp.gmail.com'
@@ -26,7 +29,7 @@ s = URLSafeTimedSerializer('Secret!')
 
 class LoginForm(FlaskForm):
 	username = StringField('username',validators=[InputRequired(), Length(min=3, max=50 )])
-	password = PasswordField('password',validators=[InputRequired(), Length(min=4, max=80)])
+	password = PasswordField('password',validators=[InputRequired(), Length(min=8, max=80)])
 	remember = BooleanField('remember me')
 
 class RegisterForm(FlaskForm):
@@ -191,6 +194,9 @@ def userlogin():
             print(username)
             print(password)
             print(remember)
+            print(res[0][1])
+			# print(res[0][1])
+			# password = str(password)
             if check_password_hash(str(res[0][1]), password):
                 session['username'] = username
                 session.pop('_flashes', None)
@@ -278,18 +284,12 @@ def userchangepassword():
             # dept =  form.department.data
             if(new_password==confirm_new):
                 new_password = generate_password_hash(new_password, "sha256") #converts password into it's hash
-                try:
-                    cursor.execute("update users set password = %s where user_id = %s",(new_password,session['username']))
-                    db.commit()
-                    print(new_password)
-                    msg = Message('Password Change request', sender = 'noreply.cms1234@gmail.com', recipients = [session['username']])
-                    msg.body =  "your password is changed \n "
-                    mail.send(msg)
-                    # print(dept)
-                    session.pop('_flashes', None)
-                    flash("Password Changed")
-                except:
-                    print("something  to terminal")
+                cursor.execute("update users set password = %s where user_id = %s",(new_password,session['username']))
+                db.commit()
+                print(new_password)
+                # print(dept)
+                session.pop('_flashes', None)
+                flash("Password Changed")
                 return render_template('afteruserloggedin.html')
             else :
                 session.pop('_flashes', None)
@@ -305,7 +305,7 @@ def userchangepassword():
 @app.route('/userlodgecomplaint1',methods=['POST','GET'])
 def userlodgecomplaint1():
     if (session['username']!=""):
-        sql = "select * from cat"
+        sql = "select category_ref from admin_cat"
         # sql = "select category_ref,subcategory_ref from admin_cat order by category_ref"
         cursor.execute(sql)
         result = cursor.fetchall()
@@ -381,22 +381,12 @@ def complaintsubmitted(dept,div1):
         subject = request.form.get('subject')
         print(subject)
         summary = request.form.get('summary')
-        status  = "lodge_complaint"
-        try:
-            cursor.execute("insert into complaint(category_ref,subcat_ref,complaint,status,user_id_ref,subject) values(%s,%s,%s,%s,%s,%s)",(category,subcategory,summary,status,session['username'],subject))
-            print(db.commit())
-            #possibly add a line to check commit and display pass or fail in value
-            sql = "select admin_ref from admin_cat where category_ref = '{0}' and subcategory_ref = '{1}'"
-            cursor.execute(sql.format(category,subcategory))
-            res = cursor.fetchall()
-            admin = res[0][0]
-            msg = Message(subject, sender = 'noreply.cms1234@gmail.com', recipients = [admin])
-            msg.body =  summary
-            mail.send(msg)
-            session.pop('_flashes', None)
-            flash("Success : Complaint Lodged")
-        except:
-            print("databse is good")
+        status  = 0
+        cursor.execute("insert into complaint(category_ref,subcat_ref,complaint,status,user_id_ref,subject) values(%s,%s,%s,%s,%s,%s)",(category,subcategory,summary,status,session['username'],subject))
+        print(db.commit())
+        #possibly add a line to check commit and display pass or fail in value
+        session.pop('_flashes', None)
+        flash("Success : Complaint Lodged")
         return redirect(url_for('afteruserloggedin'))
 
     else :
@@ -413,32 +403,16 @@ def complaintsubmitted(dept,div1):
 #@nocache                          # complaint history
 def userhistory():
     if (session['username']!=""):
-        statres = "lodge_complaint"
-        sql = "select complaint_id,complaint,status,category_ref,subcat_ref,subject from complaint where user_id_ref = '{0}' and status = '{1}'"
-        cursor.execute(sql.format(session['username'],statres))
+        sql = "select complaint_id,complaint,status,category_ref,subcat_ref,subject from complaint where user_id_ref = '{0}'"
+        cursor.execute(sql.format(session['username']))
         result1 = cursor.fetchall()
-        print(result1)
-        statres1 = "adminresponded"
-        sql = "select complaint_id,complaint,status,category_ref,subcat_ref,subject from complaint where user_id_ref = '{0}' and status = '{1}'"
-        cursor.execute(sql.format(session['username'],statres1))
-        x = cursor.fetchall()
-
-        statres2 = "userresponded_un"
-        sql = "select complaint_id,complaint,status,category_ref,subcat_ref,subject from complaint where user_id_ref = '{0}' and status = '{1}'"
-        cursor.execute(sql.format(session['username'],statres2))
-        y = cursor.fetchall()
-
-        statres3 = "userresponded_s"
-        sql = "select complaint_id,complaint,status,category_ref,subcat_ref,subject from complaint where user_id_ref = '{0}' and status = '{1}'"
-        cursor.execute(sql.format(session['username'],statres3))
-        z = cursor.fetchall()
-        return render_template('userhistory.html',result = result1,resultx = x,resulty = y,resultz = z)
+        return render_template('userhistory.html',result = result1)
     else :
         session.pop('_flashes', None)
         flash("Warning : This action is prevented before login. Please, login")
         return redirect(url_for('userlogin'))
 
-@app.route('/userresolvecomplaint/<cid>')
+@app.route('/userresolvecomplaint1/<cid>')
 #@nocache
 def userresolvecomplaint(cid):
     if (session['username']!=""):
@@ -452,26 +426,11 @@ def userresolvecomplaint(cid):
             result1["dept"] = res[0][0]
             result1["division"] = res[0][1]
             result1["complaint"] = res[0][2]
-            result1["cid"] = cid
-            if res[0][3] == "lodge_complaint":
+            if res[0][3] == "complaint_lodged":
                 result1["statusquoadmin"] = "None"
-                return render_template('userseeingadminstatus.html' , result = result1)
-            elif res[0][3] == "adminresponded":
-                result1["statusquoadmin"] = "YES"
-                return render_template('userresolvecomplaint.html',result = result1)
-                # userres = request.form.get('statususer')
-
-                print(userres)
-                return("have to redirect page")
-            elif res[0][3] == "userresponded_un":
-                result1["statusquouser"] = "unsatisfactory"
-                result1["statusquoadmin"] = "responded"
-                return render_template('usersentfeedback.html' , result = result1)
             else:
-                result1["statusquouser"] = "satisfactory"
-                result1["statusquoadmin"] = "responded"
-                return render_template('usersentfeedback.html' , result = result1)
-
+                result1["statusquoadmin"] = "YES"
+            return render_template('userseeingadminstatus.html' , result = result1)
         except:
             cursor.rollback()
             print("check for error")
@@ -480,33 +439,34 @@ def userresolvecomplaint(cid):
         flash("Warning : This action is prevented before login. Please, login")
         return redirect(url_for('userlogin'))
 
-@app.route('/userchangestatus/<cid>',methods = ['POST','GET'])
+@app.route('/userresolvecomplaint2/<cid>')
+#@nocache
+def userresolvecomplaint(cid):
+    if (session['username']!=""):
 
-def userchangestatus(cid):
-    if request.method == "POST":
-        userres = request.form.get('statususer')
-        print(userres)
-        if userres =="Satisfactory":
-            statusres = "userresponded_s"
-        else:
-            statusres = "userresponded_un"
+        result1 = dict()
+        cid = int(cid)
         try:
-            cursor.execute("update complaint set status = %s where complaint_id = %s",(statusres,cid))
-            db.commit()
-            sql = "select category_ref,subcat_ref from complaint where complaint_id = '{0}'"
+            sql = "select category_ref,subcat_ref,complaint,status from complaint where complaint_id = '{0}'"
             cursor.execute(sql.format(cid))
             res = cursor.fetchall()
-            sql1 = "select admin_ref from admin_cat where category_ref = '{0}' and subcategory_ref = '{1}'"
-            cursor.execute(sql1.format(res[0][0],res[0][1]))
-            res1 = cursor.fetchall()
-            msg = Message('user feed back', sender = 'noreply.cms1234@gmail.com', recipients = [res1[0][0]])
-            msg.body =  " user reviewed the complaint with complaintid = {} ".format(cid)
-            mail.send(msg)
+            result1["dept"] = res[0][0]
+            result1["division"] = res[0][1]
+            result1["complaint"] = res[0][2]
+            if res[0][3] == "adminresponded":
+                result1["statusquoadmin"] = "got response"
+            else:
+                result1["statusquoadmin"] = "NO"
+			userres = request.form.get('statususer')
+			print(userres)
+            return render_template('userresolvecomplaint.html' , result = result1)
         except:
-            print("errors")
-
-        return redirect(url_for('userhistory'))
-
+            cursor.rollback()
+            print("check for error")
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login")
+        return redirect(url_for('userlogin'))
 
 
 @app.route('/logout')
@@ -633,15 +593,9 @@ def adminchangepassword():
             # dept =  form.department.data
             if(new_password==confirm_new):
                 new_password= generate_password_hash(new_password, "sha256") #converts password into it's hash
-                try:
-                    cursor.execute("update admin set password = %s where admin_id = %s",(new_password,session['admin']))
-                    db.commit()
-                    msg = Message('Password Change request', sender = 'noreply.cms1234@gmail.com', recipients = [session['username']])
-                    msg.body =  "your password is changed \n "
-                    mail.send(msg)
-                    print(new_password)
-                except:
-                    print("errors")
+                cursor.execute("update admin set password = %s where admin_id = %s",(new_password,session['admin']))
+                db.commit()
+                print(new_password)
                 # print(dept)
                 return render_template('afteradminloggedin.html')
             else :
@@ -668,29 +622,12 @@ def adminresolvecomplaint(cid):
             result1["dept"] = res[0][0]
             result1["division"] = res[0][1]
             result1["complaint"] = res[0][2]
-            result1["cid"] = cid
-            if res[0][3] == "lodge_complaint":
-                # adminres = request.form.get("statusadmin")
-                # print(adminres)
-                # insert statement here
-                return render_template("adminresolvecomplaint.html" , result = result1)
-
-            elif res[0][3] == "userresponded_un":
-                result1["statusquouser"] = "not satisfied"
-                result1["statusquoadmin"] = "responded"
-                return render_template("adminupdatedstatus.html" , result = result1)
-            elif res[0][3] == "adminresponded":
-                result1["statusquouser"] = "not reviewed"
-                result1["statusquoadmin"] = "responded"
-                return render_template("adminupdatedstatus.html" , result = result1)
+            if res[0][3] == 1:
+                result1["statusquo"] = "YES"
             else:
-                result1["statusquouser"] = "satisfied"
-                result1["statusquoadmin"] = "responded"
-                return render_template("adminupdatedstatus.html" , result = result1)
-
-
+                result1["statusquo"] = "NO"
         except:
-            # cursor.rollback()
+            cursor.rollback()
             print("admin error db")
         return render_template('adminresolvecomplaint.html' , result = result1)
     else :
@@ -698,56 +635,20 @@ def adminresolvecomplaint(cid):
         flash("Warning : This action is prevented before login. Please, login")
         return redirect(url_for('adminlogin'))
 
-@app.route('/adminchangestatus/<cid>',methods =['POST','GET'])
 
-def adminchangestatus(cid):
-    if request.method == 'POST':
-        userres = request.form.get('statusadmin')
-        print("hello to tyou brothert")
-        if(userres == "Resolved"):
-            statusres = "adminresponded"
-            print(statusres)
-            print(cid)
-            try:
-                cursor.execute("update complaint set status = %s where complaint_id = %s",(statusres,cid))
-                db.commit()
-                sql = "select user_id_ref from complaint where complaint_id = '{0}'"
-                cursor.execute(sql.format(cid))
-                res = cursor.fetchall()
-                msg = Message('admin resolved complainted', sender = 'noreply.cms1234@gmail.com', recipients = [res[0][0]])
-                msg.body =  "your complaint  with complaint id: { }is resolved, Please check and review regarding the same \n ".format(cid)
-                mail.send(msg)
-                print(userres)
-            except:
-                print("errors")
-            return redirect(url_for('admincomplainthistory'))
-    return redirect(url_for('admincomplainthistory'))
-
-
+result1 = dict()
+i=0
+for i in range(1,1000):
+	result1[str(i)] = i+2
 
 @app.route('/admincomplainthistory',methods = ['POST','GET'])
 #@nocache		               #Admin history
 def admincomplainthistory():
     if (session['admin']!=""):
-        statres = "lodge_complaint"
-        sql = "select complaint_id,complaint,status,complaint.category_ref,subcat_ref,subject from admin_cat INNER JOIN complaint  ON (admin_cat.category_ref = complaint.category_ref AND admin_cat.subcategory_ref = complaint.subcat_ref)where admin_ref = '{0}' and status = '{1}'"
-        cursor.execute(sql.format(session['admin'],statres))
+        sql = "select complaint_id,complaint,status,complaint.category_ref,subcat_ref,subject from admin_cat INNER JOIN complaint  ON (admin_cat.category_ref = complaint.category_ref AND admin_cat.subcategory_ref = complaint.subcat_ref)where admin_ref = '{0}'"
+        cursor.execute(sql.format(session['admin']))
         result1 = cursor.fetchall()
-        print(result1)
-        statres1 = "adminresponded"
-        sql = "select complaint_id,complaint,status,complaint.category_ref,subcat_ref,subject from admin_cat INNER JOIN complaint  ON (admin_cat.category_ref = complaint.category_ref AND admin_cat.subcategory_ref = complaint.subcat_ref)where admin_ref = '{0}' and status = '{1}'"
-        cursor.execute(sql.format(session['admin'],statres1))
-        x = cursor.fetchall()
-        statres2 = "userresponded_un"
-        sql = "select complaint_id,complaint,status,complaint.category_ref,subcat_ref,subject from admin_cat INNER JOIN complaint  ON (admin_cat.category_ref = complaint.category_ref AND admin_cat.subcategory_ref = complaint.subcat_ref)where admin_ref = '{0}' and status = '{1}'"
-        cursor.execute(sql.format(session['admin'],statres2))
-        y = cursor.fetchall()
-        statres3 = "userresponded_s"
-        sql = "select complaint_id,complaint,status,complaint.category_ref,subcat_ref,subject from admin_cat INNER JOIN complaint  ON (admin_cat.category_ref = complaint.category_ref AND admin_cat.subcategory_ref = complaint.subcat_ref)where admin_ref = '{0}' and status = '{1}'"
-        cursor.execute(sql.format(session['admin'],statres3))
-        z = cursor.fetchall()
-        print(result1)
-        return render_template('admincomplainthistory.html',result = result1,resultx = x,resulty = y,resultz = z)
+        return render_template('admincomplainthistory.html',result = result1)
     else :
         session.pop('_flashes', None)
         flash("Warning : This action is prevented before login. Please, login")
@@ -789,7 +690,7 @@ def superadminlogin():
             render_template('superadminlogin',form=form)
         else :
 
-            if res[0][0] == password:
+            if res[0][0] == password :
                 session['superuser'] = username
 
                 session.pop('_flashes', None)
@@ -826,26 +727,21 @@ def superadmin_addadmin():
             dept = form.department.data
             division = form.division.data
             passcode = form.passcode.data
+            cursor.execute("insert into admin values(%s,%s,%s,%s,%s)",(email,passcode,first_name,last_name,age))
             sql = "select * from subcat where subcategory = '{0}' and category_ref = '{1}'"
-            try:
-                cursor.execute(sql.format(division,dept))
-                res = cursor.fetchall()
-                if res!=[]:
-                    cursor.execute("insert into admin values(%s,%s,%s,%s,%s)",(email,passcode,first_name,last_name,age))
-                    cursor.execute("insert into admin_cat values(%s,%s,%s)",(email,dept,division))
-                    db.commit()
-                    print(first_name)
-                    print(last_name)
-                    print(age)
-                    print(dept)
-                    print(division)
-                    return render_template('aftersuperadminloggedin.html')
-                else:
-                    session.pop('_flashes', None)
-                    flash("Warning : The pair department and division does not exist, please  enter it correct.")
-                    return redirect(url_for('aftersuperadminloggedin'))
-            except:
-                print("some database error")
+            cursor.execute(sql.format(division,dept))
+            res = cursor.fetchall()
+            if res!=[]:
+                cursor.execute("insert into admin_cat values(%s,%s,%s)",(email,dept,division))
+                db.commit()
+                print(first_name)
+                print(last_name)
+                print(age)
+                print(dept)
+                print(division)
+                return render_template('aftersuperadminloggedin.html')
+            else:
+                return("choose correct cat and subcat pair")
 
         return render_template('superadminaddadmin.html',form = form)
 
@@ -864,8 +760,9 @@ def superadminprofileinfo():
         res = cursor.fetchall()
         result1 = dict()
         result1["first_name"] = res[0][2]
-        result1["last_name"] = res[0][3]
-        result1["age"] = res[0][4]
+        result1["last_name"] = "to be added to database"
+        result1["age"] = "to be added "
+        result1["dept"] = "to be added to databse"
         return render_template('superadminprofileinfo.html',result = result1)
     else :
         session.pop('_flashes', None)
@@ -885,12 +782,9 @@ def superadminchangepassword():
             # dept =  form.department.data
             if(new_password==confirm_new):
                 new_password = generate_password_hash(new_password, "sha256") #converts password into it's hash
-                try:
-                    cursor.execute("update super_admin set password = %s where superadmin = %s",(new_password,session['superuser']))
-                    db.commit()
-                    print(new_password)
-                except:
-                    print("error may happen bro")
+                cursor.execute("update super_admin set password = %s where superadmin = %s",(new_password,session['superuser']))
+                db.commit()
+                print(new_password)
                 # print(dept)
                 return render_template('aftersuperadminloggedin.html')
             else :
@@ -932,9 +826,7 @@ def superadmin_removeadmin():
                 db.commit()
                 return render_template('aftersuperadminloggedin.html')
             else:
-                session.pop('_flashes', None)
-                flash(" there is no such admin_id exists, please check")
-                return redirect(url_for('aftersuperadminloggedin'))
+                return("enter correct admin email")
 
         return render_template('superadminremoveadmin.html',form = form)
     else :
@@ -962,20 +854,13 @@ def superadmin_adddivision():
                 cursor.execute(sql.format(dept,division))
                 res1 = cursor.fetchall()
                 if(res1==[]):
-                    try:
-                        cursor.execute("insert into subcat values(%s,%s)",(division,dept))
-                        db.commit()
-                    except:
-                        print("errors undochu  emo")
+                    cursor.execute("insert into subcat values(%s,%s)",(division,dept))
+                    db.commit()
                     return render_template('aftersuperadminloggedin.html')
                 else:
-                    session.pop('_flashes', None)
-                    flash(" that category and subcategory pair already exists",'error')
-                    return redirect(url_for('aftersuperadminloggedin'))
+                    return("already pair exists")
             else:
-                session.pop('_flashes', None)
-                flash(" no such category exists")
-                return redirect(url_for('aftersuperadminloggedin'))
+                return("no such category exists")
 
 
         return render_template('superadminadddivision.html', form=form)
@@ -1010,14 +895,9 @@ def superadmin_removedivision():
                     db.commit()
                     return render_template('aftersuperadminloggedin.html')
                 else:
-                    session.pop('_flashes', None)
-                    flash(" that category and subcategory pair don not exists")
-                    return redirect(url_for('aftersuperadminloggedin'))
+                    return("that pair donot exist")
             else:
-                session.pop('_flashes', None)
-                flash(" no such category exists")
-                return redirect(url_for('aftersuperadminloggedin'))
-
+                return("no such category exists")
 
 
 
@@ -1042,17 +922,11 @@ def superadmin_adddepartment():
             cursor.execute(sql.format(dept))
             res = cursor.fetchall()
             if(res!=[]):
-                session.pop('_flashes', None)
-                flash(" already category exists")
-                return redirect(url_for('aftersuperadminloggedin'))
-
+                return("already category  exists")
 
             else:
-                try:
-                    cursor.execute("insert into cat values(%s)",(dept))
-                    db.commit()
-                except:
-                    print("errors")
+                cursor.execute("insert into cat values(%s)",(dept))
+                db.commit()
                 return render_template('aftersuperadminloggedin.html')
 
 
@@ -1083,9 +957,7 @@ def superadmin_removedepartment():
                 db.commit()
                 return render_template('aftersuperadminloggedin.html')
             else:
-                session.pop('_flashes', None)
-                flash(" no such category exists")
-                return redirect(url_for('aftersuperadminloggedin'))
+                return("no such category  exists")
 
 
         return render_template('superadminremovedepartment.html',form=form)
@@ -1150,4 +1022,4 @@ def dashboard():
 
 
 if __name__ == '__main__':
-	app.run(debug=True,threaded =True,host = '0.0.0.0')
+	app.run(debug=True,threaded =True,host = '0.0.0.0',ssl_context = context)

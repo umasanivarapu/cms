@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CMSPortal</title>
+<style>
+.button {
+  font: 20px Roboto;
+  text-decoration: none;
+  background-color: #333333;
+  color: #FFFFFF;
+  padding: 2px 6px 2px 6px;
+}
+</style>
+
+</head>
+<body>
+
+
+<div class="button">
+<span style="float:left"> <a href="{{ url_for('admincomplainthistory') }}" class="button">Back</a> </span>
+<span style="float:right"> <a href="/logout1" class="button">Logout</a> </span><br/>
+
+</div>
+<br/><br/>
+
+<!-- <form action = "/cgi-bin/hello_get.cgi" method = "get"> -->
+<center>
+
+<label for="dept">Department:</label>
+<input type="text" name = "dept" value = "{{result["dept"]}}" readonly>
+<br/>
+<label for="division">Division:</label>
+<input type="text" name = "division" value = "{{result["division"]}}" readonly>
+<br/>
+<br/>
+<label for="complaint">Description of Complaint:</label>
+<input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly>
+<br/>
+<br/>
+<!-- <input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly> -->
+<label for="statusquoadmin">Your response : </label>
+<input type="text" name = "statusquoadmin" value = "{{result["statusquoadmin"]}}" readonly>
+<br/>
+<br/>
+<label for="statusquouser">User Feedback : </label>
+<input type="text" name = "statusquouser" value = "{{result["statusquouser"]}}" readonly>
+<br/>
+<br/>
+<!-- <center> Status </center>
+
+<form>
+  <input type="radio" id="yes" name="status" value="yes">
+  <label for="yes">Yes</label>
+  <input type="radio" id="no" name="status" value="no">
+  <label for="no">No</label><br/>
+  <input type="submit" value="Submit">
+</form><!-- </form> --> -->
+
+
+</body>
+</html>

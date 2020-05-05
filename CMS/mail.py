@@ -1,6 +1,5 @@
 from flask import Flask
 from flask_mail import Mail, Message
-
 app =Flask(__name__)
 mail=Mail(app)
 
@@ -14,8 +13,9 @@ mail = Mail(app)
 
 @app.route("/")
 def index():
-   msg = Message('Reg:Email Notification', sender = 'noreply.cms1234@gmail.com', recipients = ['cs16btech11015@iith.ac.in'])
-   msg.body = " yaay email Notification is done.      This is auto-generated mail, Please don't reply.    hehe"
+   msg = Message('Hello', sender = 'noreply.cms1234@gmail.com', recipients = ['cs16btech11016@iith.ac.in'])
+   msg.body = "Hello Flask message sent from Flask-Mail"
+   # mail.send(msg)
    mail.send(msg)
    return "Sent"
 

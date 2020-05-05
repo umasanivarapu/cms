@@ -41,20 +41,24 @@
 <label for="statusquoadmin">Status from Admin:</label>
 <input type="text" name = "statusquoadmin" value = "{{result["statusquoadmin"]}}" readonly>
 <br/>
+<label for="statusquouser">Your Feedback:</label>
+<input type="text" name = "statusquouser" value = "{{result["statusquouser"]}}" readonly>
+<br/>
+
 <!-- <input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly> -->
 <!-- <center> : <label for="userfeedback">User Feedback:</label>
 <input type="text" name = "userfeedback" value = "{{result["statusquo"]}}" readonly>
 <br/> </center> -->
 
-<center> Your Feedback : </center>
+<!-- <center> Your Feedback </center>
 
-<form  action = "{{url_for('userchangestatus',cid = result["cid"])}}" Method = "POST"  >
-  <input type="radio" id="yes" name="statususer" value="Satisfactory">
+<form>
+  <input type="radio" id="yes" name="status" value="Satisfied">
   <label for="yes">Yes</label>
-  <input type="radio" id="no" name="statususer" value="Not upto the mark">
+  <input type="radio" id="no" name="status" value="Not satisfied">
   <label for="no">No</label><br/>
   <input type="submit" value="Submit">
-</form>
+</form> -->
 
 <!-- <form>
   <input type="radio" id="yes" name="status" value="yes">

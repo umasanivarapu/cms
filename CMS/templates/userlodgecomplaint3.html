@@ -44,11 +44,11 @@ CMSPortal
 <center>Division : {{val1}} </center><br/>
 <center> Subject of Complaint</center>
 <form action="{{ url_for('complaintsubmitted',dept= val,div1 = val1) }}"  method = "POST"  style="margin-left:auto;margin-right:auto align='center'">
-<textarea rows = "1" cols = "60" name = "subject" minlength = "10" maxlength = "40">
+<textarea rows = "1" cols = "60" name = "subject" minlength = "10" maxlength = "40" required>
 </textarea><br>
 <center> Complaint</center>
 
-<textarea rows = "8" cols = "60" name = "summary" minlength = "20">
+<textarea rows = "8" cols = "60" name = "summary" minlength = "20" required>
 </textarea> <br>
 <input type = submit value = "Submit" class="search">
 </form>
