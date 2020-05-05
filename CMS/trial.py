@@ -86,6 +86,8 @@ class AddRemoveDepartment(FlaskForm):
 
 class RemoveAdmin(FlaskForm):
 	adminemail = StringField('adminemail', validators=[InputRequired(), Length(max=30)])
+	department = StringField('Department', validators=[InputRequired(), Length(max=30)])
+	division = StringField('Division',validators=[InputRequired()])
 
 class DynamicDropdown(FlaskForm):
 	department = StringField('department',choices=[('a','a'),('b','b')])
@@ -113,46 +115,42 @@ def user():
 @app.route('/signup', methods=['GET', 'POST'])
 #@nocache                       #Signup
 def signup():
-    form = RegisterForm()
-    if form.validate_on_submit():
-    # username = form.username.data
-        email = form.email.data
-        password = generate_password_hash(form.password.data, "sha256") #converts password into it's hash
-		#password = form.password.data
-        firstname = form.firstname.data
-        lastname  = form.lastname.data
-        age = form.age.data
-        sql = "select user_id,password from users where user_id = '{0}'"
-        cursor.execute(sql.format(email))
-        res = cursor.fetchall()
-        print(len(res))
-        if(res==[]):
-            user_name = email
-            session['username'] = email
-            token = s.dumps(email,salt = 'email-confirm')
-            msg = Message('Confirm Email',sender = 'noreply.cms1234@gmail.com',recipients = [email])
-            link = url_for('confirm_email',token = token, _external = True)
-            msg.body = 'Link is valid for only five minutes \n Your link is {}'.format(link)
-            mail.send(msg)
-            print(user_name)
-            print(email)
-            print(password)
-            cursor.execute("insert into users values(%s,%s,%s,%s,%s)",(email,password,firstname,lastname,age))
-            db.commit()
-            return '<h1> Please goto your mail and confirm your email</h1>'
-        else:
-
-			# session.pop('_flashes', None)
-            # flash("Username already exists",'error')
-            return redirect(url_for('userlogin'))
-
-
-    return render_template('signup.html',form = form)
+	form = RegisterForm()
+	if form.validate_on_submit():
+		userres = dict()
+		userres["email"] = form.email.data
+		userres["password"] = generate_password_hash(form.password.data, "sha256") #converts password into it's hash
+		userres["firstname"] = form.firstname.data
+		userres["lastname"]  = form.lastname.data
+		userres["age"] = form.age.data
+		email = userres["email"]
+		sql = "select user_id,password from users where user_id = '{0}'"
+		cursor.execute(sql.format(email))
+		res = cursor.fetchall()
+		print(len(res))
+		if(res==[]):
+			user_name = email
+			token = s.dumps(userres,salt = 'email-confirm')
+			msg = Message('Confirm Email',sender = 'noreply.cms1234@gmail.com',recipients = [email])
+			link = url_for('confirm_email',token = token, _external = True)
+			msg.body = 'Link is valid for only 10 minutes \n Your link is {}'.format(link)
+			mail.send(msg)
+			# print(user_name)
+			# print(email)
+			# print(password)
+			return '<h1> Please goto your mail and confirm your email</h1> <br/><h2> It may take five minutes to receive mail </h2>'
+		else:
+			return redirect(url_for('userlogin'))
+	return render_template('signup.html',form = form)
 
 @app.route('/confirm_email/<token>')
 def confirm_email(token):
 	try:
-		email = s.loads(token,salt = 'email-confirm',max_age = 300)
+		user_d = s.loads(token,salt = 'email-confirm',max_age = 600)
+		print(user_d)
+		cursor.execute("insert into users values(%s,%s,%s,%s,%s)",(user_d["email"],user_d["password"],user_d["firstname"],user_d["lastname"],user_d["age"]))
+		session['username'] = user_d["email"]
+		db.commit()
 		session.pop('_flashes', None)
 		flash("Successfully signed up",'error')
 	except:
@@ -160,7 +158,7 @@ def confirm_email(token):
 		cursor.execute(sql.format(session['username']))
 		db.commit()
 
-		return("confirmation expired or not confirmed")
+		return '<h1> The link is expired </h1>'
 	return render_template('afteruserloggedin.html')
 
 @app.route('/userlogin', methods=['GET','POST'])
@@ -815,44 +813,40 @@ def aftersuperadminloggedin():
 @app.route('/superadmin_addadmin',methods=['GET','POST'])
 #@nocache
 def superadmin_addadmin():
-    if (session['superuser']!=""):
-
-        form = AddRemoveAdmin()
-        if form.validate_on_submit():
-            email = form.email.data
-            first_name = form.first_name.data
-            last_name = form.last_name.data
-            age = form.age.data
-            dept = form.department.data
-            division = form.division.data
-            passcode = form.passcode.data
-            sql = "select * from subcat where subcategory = '{0}' and category_ref = '{1}'"
-            try:
-                cursor.execute(sql.format(division,dept))
-                res = cursor.fetchall()
-                if res!=[]:
-                    cursor.execute("insert into admin values(%s,%s,%s,%s,%s)",(email,passcode,first_name,last_name,age))
-                    cursor.execute("insert into admin_cat values(%s,%s,%s)",(email,dept,division))
-                    db.commit()
-                    print(first_name)
-                    print(last_name)
-                    print(age)
-                    print(dept)
-                    print(division)
-                    return render_template('aftersuperadminloggedin.html')
-                else:
-                    session.pop('_flashes', None)
-                    flash("Warning : The pair department and division does not exist, please  enter it correct.")
-                    return redirect(url_for('aftersuperadminloggedin'))
-            except:
-                print("some database error")
-
-        return render_template('superadminaddadmin.html',form = form)
-
-    else :
-        session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
-        return redirect(url_for('superadminlogin'))
+	if (session['superuser']!=""):
+		form = AddRemoveAdmin()
+		if form.validate_on_submit():
+			email = form.email.data
+			first_name = form.first_name.data
+			last_name = form.last_name.data
+			age = form.age.data
+			dept = form.department.data
+			division = form.division.data
+			passcode = form.passcode.data
+			sql = "select * from subcat where subcategory = '{0}' and category_ref = '{1}'"
+			sql1 = "select * from admin where admin_id = '{0}'"
+			try:
+				cursor.execute(sql.format(division,dept))
+				res = cursor.fetchall()
+				cursor.execute(sql1.format(email))
+				res1 = cursor.fetchall()
+				if res!=[]:
+					if res1 == []:
+						cursor.execute("insert into admin values(%s,%s,%s,%s,%s)",(email,passcode,first_name,last_name,age))
+					cursor.execute("insert into admin_cat values(%s,%s,%s)",(email,dept,division))
+					db.commit()
+					return render_template('aftersuperadminloggedin.html')
+				else:
+					session.pop('_flashes', None)
+					flash("Warning : The pair department and division does not exist, please  enter it correct.")
+					return redirect(url_for('aftersuperadminloggedin'))
+			except:
+				print("some database error")
+		return render_template('superadminaddadmin.html',form = form)
+	else :
+		session.pop('_flashes', None)
+		flash("Warning : This action is prevented before login. Please, login")
+		return redirect(url_for('superadminlogin'))
 
 
 @app.route('/superadminprofileinfo',methods = ['POST', 'GET'])
@@ -908,39 +902,36 @@ def superadminchangepassword():
 @app.route('/superadmin_removeadmin',methods=['GET','POST'])
 #@nocache
 def superadmin_removeadmin():
-    if (session['superuser']!=""):
-        form = RemoveAdmin()
-
-        if form.validate_on_submit():
-            adminemail = form.adminemail.data
-            # first_name = form.first_name.data
-            # last_name = form.last_name.data
-            # age = form.age.data
-            # dept = form.department.data
-            # division = form.division.data
-            # print(first_name)
-            # print(last_name)
-            # print(age)
-            # print(dept)
-            # print(division)
-            sql = "select admin_id from admin where admin_id = '{0}'"
-            cursor.execute(sql.format(adminemail))
-            res = cursor.fetchall()
-            if(res!=[]):
-                sql = "delete from admin where admin_id = '{0}'"
-                cursor.execute(sql.format(adminemail))
-                db.commit()
-                return render_template('aftersuperadminloggedin.html')
-            else:
-                session.pop('_flashes', None)
-                flash(" there is no such admin_id exists, please check")
-                return redirect(url_for('aftersuperadminloggedin'))
-
-        return render_template('superadminremoveadmin.html',form = form)
-    else :
-        session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
-        return redirect(url_for('superadminlogin'))
+	if (session['superuser']!=""):
+		form = RemoveAdmin()
+		if form.validate_on_submit():
+			adminemail = form.adminemail.data
+			dept = form.department.data
+			division = form.division.data
+			sql1 = "select * from admin_cat where admin_ref = '{0}' and category_ref = '{1}' and subcategory_ref = '{2}'"
+			cursor.execute(sql1.format(adminemail,dept,division))
+			res1 = cursor.fetchall()
+			if res1 != []:
+				sql = "delete from admin_cat where admin_ref = '{0}' and category_ref = '{1}' and subcategory_ref = '{2}'"
+				cursor.execute(sql.format(adminemail,dept,division))
+				db.commit()
+				sql1 = "select * from admin_cat where admin_ref = '{0}'"
+				cursor.execute(sql1.format(adminemail))
+				res = cursor.fetchall()
+				if res == []:
+					sql2 = "delete from admin where admin_id = '{0}'"
+					cursor.execute(sql2.format(adminemail))
+					db.commit()
+				return render_template('aftersuperadminloggedin.html')
+			else:
+				session.pop('_flashes', None)
+				flash(" there is no such admin exists for that pair")
+				return redirect(url_for('superadminremoveadmin'))
+		return render_template('superadminremoveadmin.html',form = form)
+	else :
+		session.pop('_flashes', None)
+		flash("Warning : This action is prevented before login. Please, login")
+		return redirect(url_for('superadminlogin'))
 
 
 @app.route('/superadmin_adddivision', methods =['GET','POST'])
