@@ -10,6 +10,7 @@
   color: #FFFFFF;
   padding: 2px 6px 2px 6px;
 }
+
 </style>
 
 </head>
@@ -22,33 +23,40 @@
 
 </div>
 
-<br/><br/>
-
+<br/><br/><center>
+<table  border = 1 >
+  <tr>
+    <th>Department</th>
+    <td>{{result["dept"]}}</td>
+  </tr>
+  <tr>
+    <th>Division</th>
+    <td>{{result["division"]}}</td>
+  </tr>
+  <tr>
+    <th>Description of Complaint</th>
+    <td>{{result["complaint"]}}</td>
+  </tr>
+</table>
+<br/>
 <!-- <form action = "/cgi-bin/hello_get.cgi" method = "get"> -->
-<center>
-
+<!--
 <label for="dept">Department:</label>
-<input type="text" name = "dept" value = "{{result["dept"]}}" readonly>
-<br/>
+<input type="text" name = "dept" value = "{{result["dept"]}}" readonly><br/><br/>
 <label for="division">Division:</label>
-<input type="text" name = "division" value = "{{result["division"]}}" readonly>
-<br/>
-<br/>
+<input type="text" name = "division" value = "{{result["division"]}}" readonly><br/><br/>
 <label for="complaint">Description of Complaint:</label>
-<input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly>
-<br/>
-<br/>
+<input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly><br/><br/>
+
 <!-- <input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly> -->
-<center> Status </center>
 
 <form  action = "{{url_for('adminchangestatus',cid = result["cid"])}}" Method = "POST"  >
+  Is the Complaint Resolved?
   <input type="radio" id="yes" name="statusadmin" value="Resolved">
-  <label for="yes">Yes</label>
-  <input type="radio" id="no" name="statusadmin" value="Not resolved">
-  <label for="no">No</label><br/>
+  <label for="yes">Yes</label><br/><br/>
   <input type="submit" value="Submit">
 </form><!-- </form> -->
 
-
+</center>
 </body>
 </html>

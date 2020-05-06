@@ -25,7 +25,28 @@
 <br/><br/>
 
 <center>
+<h2>Complaint Details</h2>
 
+<table  border = 1 >
+  <tr>
+    <th>Department</th>
+    <td>{{result["dept"]}}</td>
+  </tr>
+  <tr>
+    <th>Division</th>
+    <td>{{result["division"]}}</td>
+  </tr>
+  <tr>
+    <th>Description of Complaint</th>
+    <td>{{result["complaint"]}}</td>
+  </tr>
+  <tr>
+    <th>Admin Response</th>
+    <td>{{result["statusquoadmin"]}}</td>
+  </tr>
+  
+</table>
+<!--
 <label for="dept">Department:</label>
 <input type="text" name = "dept" value = "{{result["dept"]}}" readonly>
 <br/>

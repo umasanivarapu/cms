@@ -25,7 +25,30 @@
 
 <!-- <form action = "/cgi-bin/hello_get.cgi" method = "get"> -->
 <center>
-
+<table  border = 1 >
+  <tr>
+    <th>Department</th>
+    <td>{{result["dept"]}}</td>
+  </tr>
+  <tr>
+    <th>Division</th>
+    <td>{{result["division"]}}</td>
+  </tr>
+  <tr>
+    <th>Description of Complaint</th>
+    <td>{{result["complaint"]}}</td>
+  </tr>
+  <tr>
+    <th>Your Response</th>
+    <td>{{result["statusquoadmin"]}}</td>
+  </tr>
+  <tr>
+    <th>User Feedback</th>
+    <td>{{result["statusquouser"]}}</td>
+  </tr>
+  
+</table>
+<!--
 <label for="dept">Department:</label>
 <input type="text" name = "dept" value = "{{result["dept"]}}" readonly>
 <br/>
@@ -37,7 +60,7 @@
 <input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly>
 <br/>
 <br/>
-<!-- <input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly> -->
+<!-- <input type="text" name = "complaint" value = "{{result["complaint"]}}" readonly>
 <label for="statusquoadmin">Your response : </label>
 <input type="text" name = "statusquoadmin" value = "{{result["statusquoadmin"]}}" readonly>
 <br/>
@@ -54,7 +77,7 @@
   <input type="radio" id="no" name="status" value="no">
   <label for="no">No</label><br/>
   <input type="submit" value="Submit">
-</form><!-- </form> --> -->
+</form><!-- </form> --> 
 
 
 </body>

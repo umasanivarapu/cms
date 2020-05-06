@@ -7,10 +7,8 @@ from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
 from flask_mail import Mail,Message
 from itsdangerous import URLSafeTimedSerializer,SignatureExpired
-# from nocache import nocache
-
-
 from app import app, cursor, db
+
 app = Flask(__name__)
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
@@ -115,33 +113,32 @@ def user():
 @app.route('/signup', methods=['GET', 'POST'])
 #@nocache                       #Signup
 def signup():
-	form = RegisterForm()
-	if form.validate_on_submit():
-		userres = dict()
-		userres["email"] = form.email.data
-		userres["password"] = generate_password_hash(form.password.data, "sha256") #converts password into it's hash
-		userres["firstname"] = form.firstname.data
-		userres["lastname"]  = form.lastname.data
-		userres["age"] = form.age.data
-		email = userres["email"]
-		sql = "select user_id,password from users where user_id = '{0}'"
-		cursor.execute(sql.format(email))
-		res = cursor.fetchall()
-		print(len(res))
-		if(res==[]):
-			user_name = email
-			token = s.dumps(userres,salt = 'email-confirm')
-			msg = Message('Confirm Email',sender = 'noreply.cms1234@gmail.com',recipients = [email])
-			link = url_for('confirm_email',token = token, _external = True)
-			msg.body = 'Link is valid for only 10 minutes \n Your link is {}'.format(link)
-			mail.send(msg)
-			# print(user_name)
-			# print(email)
-			# print(password)
-			return '<h1> Please goto your mail and confirm your email</h1> <br/><h2> It may take five minutes to receive mail </h2>'
-		else:
-			return redirect(url_for('userlogin'))
-	return render_template('signup.html',form = form)
+    form = RegisterForm()
+    if form.validate_on_submit():
+        userres = dict()
+        userres["email"] = form.email.data
+        userres["password"] = generate_password_hash(form.password.data, "sha256") #converts password into it's hash
+        userres["firstname"] = form.firstname.data
+        userres["lastname"]  = form.lastname.data
+        userres["age"] = form.age.data
+        email = userres["email"]
+        sql = "select user_id,password from users where user_id = '{0}'"
+        cursor.execute(sql.format(userres["email"]))
+        res = cursor.fetchall()
+        print(len(res))
+        if(res==[]):
+            user_name = email
+            token = s.dumps(userres,salt = 'email-confirm')
+            msg = Message('Confirm Email',sender = 'noreply.cms1234@gmail.com',recipients = [email])
+            link = url_for('confirm_email',token = token, _external = True)
+            msg.body = 'Link is valid for only 10 minutes \n Your link is {}'.format(link)
+            mail.send(msg)
+            return '<h1> Please goto your mail and confirm your email</h1> <br/><h2> It may take five minutes to receive mail </h2>'
+        else:
+            session.pop('_flashes', None)
+            flash("User already exists. Login to continue",'warning')
+            return redirect(url_for('userlogin'))
+    return render_template('signup.html',form = form)
 
 @app.route('/confirm_email/<token>')
 def confirm_email(token):
@@ -152,7 +149,7 @@ def confirm_email(token):
 		session['username'] = user_d["email"]
 		db.commit()
 		session.pop('_flashes', None)
-		flash("Successfully signed up",'error')
+		flash("Successfully signed up",'success')
 	except:
 		sql = "delete from users where user_id = '{0}'"
 		cursor.execute(sql.format(session['username']))
@@ -180,7 +177,7 @@ def userlogin():
         print(len(res))
         if(res==[]):
             session.pop('_flashes', None)
-            flash("Invalid Username",'error')
+            flash("Invalid Username",'danger')
             return redirect(url_for('userlogin'))
 
         else :
@@ -196,7 +193,7 @@ def userlogin():
                 return render_template('afteruserloggedin.html')
             else :
                 session.pop('_flashes', None)
-                flash("Incorrect password",'error')
+                flash("Incorrect password",'danger')
                 return redirect(url_for('userlogin'))
 
     return render_template('userlogin.html',form = form)
@@ -210,7 +207,7 @@ def afteruserloggedin():
         return render_template('afteruserloggedin.html')
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('userlogin'))
 
 
@@ -230,7 +227,7 @@ def userprofileinfo():
         return render_template('userprofileinfo.html',result = result1)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('userlogin'))
 
 
@@ -259,7 +256,7 @@ def usersettings():
         return render_template('usersettings.html',form = form)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('userlogin'))
 
 
@@ -285,19 +282,19 @@ def userchangepassword():
                     mail.send(msg)
                     # print(dept)
                     session.pop('_flashes', None)
-                    flash("Password Changed")
+                    flash("Password Changed",'success')
                 except:
                     print("something  to terminal")
                 return render_template('afteruserloggedin.html')
             else :
                 session.pop('_flashes', None)
-                flash("Entered passwords don't match")
+                flash("Entered passwords don't match",'warning')
                 return redirect(url_for('userchangepassword'))
 
         return render_template('userchangepassword.html',form = form)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('userlogin'))
 
 @app.route('/userlodgecomplaint1',methods=['POST','GET'])
@@ -315,7 +312,7 @@ def userlodgecomplaint1():
         return render_template('userlodgecomplaint1.html',result = result)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('userlogin'))
 
 
@@ -351,7 +348,7 @@ def userlodgecomplaint2():
         return render_template('userlodgecomplaint2.html',result = result,value = var1)      #have to add value of sel for display here
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('userlogin'))
 
 
@@ -366,7 +363,7 @@ def userlodgecomplaint3(department):
         return render_template('userlodgecomplaint3.html',val=department,val1 = variable2)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('userlogin'))
 
 @app.route('/complaintsubmitted/<dept>/<div1>',methods = ['GET','POST'])
@@ -392,14 +389,14 @@ def complaintsubmitted(dept,div1):
             msg.body =  summary
             mail.send(msg)
             session.pop('_flashes', None)
-            flash("Success : Complaint Lodged")
+            flash("Success : Complaint Lodged",'success')
         except:
             print("databse is good")
         return redirect(url_for('afteruserloggedin'))
 
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('userlogin'))
 
 # result1 = dict()
@@ -433,7 +430,7 @@ def userhistory():
         return render_template('userhistory.html',result = result1,resultx = x,resulty = y,resultz = z)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('userlogin'))
 
 @app.route('/userresolvecomplaint/<cid>')
@@ -455,19 +452,19 @@ def userresolvecomplaint(cid):
                 result1["statusquoadmin"] = "None"
                 return render_template('userseeingadminstatus.html' , result = result1)
             elif res[0][3] == "adminresponded":
-                result1["statusquoadmin"] = "YES"
+                result1["statusquoadmin"] = "Resolved"
                 return render_template('userresolvecomplaint.html',result = result1)
                 # userres = request.form.get('statususer')
 
                 print(userres)
                 return("have to redirect page")
             elif res[0][3] == "userresponded_un":
-                result1["statusquouser"] = "unsatisfactory"
-                result1["statusquoadmin"] = "responded"
+                result1["statusquouser"] = "Un-satisfactory"
+                result1["statusquoadmin"] = "Resolved"
                 return render_template('usersentfeedback.html' , result = result1)
             else:
-                result1["statusquouser"] = "satisfactory"
-                result1["statusquoadmin"] = "responded"
+                result1["statusquouser"] = "Satisfactory"
+                result1["statusquoadmin"] = "Resolved"
                 return render_template('usersentfeedback.html' , result = result1)
 
         except:
@@ -475,7 +472,7 @@ def userresolvecomplaint(cid):
             print("check for error")
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('userlogin'))
 
 @app.route('/userchangestatus/<cid>',methods = ['POST','GET'])
@@ -540,17 +537,17 @@ def adminlogin():
         res = cursor.fetchall()
         if(res==[]):
             session.pop('_flashes', None)
-            flash("Invalid Admin Id")
+            flash("Invalid Admin Id",'danger')
             return redirect(url_for('adminlogin'))
         else :
-            if res[0][0] == password:
+            if check_password_hash(res[0][0], password):
                 session['admin'] = username
                 session.pop('_flashes', None)
-                flash("Successfully Loggedin")    # have to write else conditions.
+                flash("Successfully Loggedin",'success')    # have to write else conditions.
                 return render_template('afteradminloggedin.html')
             else :
                 session.pop('_flashes', None)
-                flash("Incorrect Password")    # have to write else conditions.
+                flash("Incorrect Password",'danger')    # have to write else conditions.
                 return render_template('adminlogin.html',form=form)
     return render_template('adminlogin.html',form = form)
 
@@ -562,7 +559,7 @@ def afteradminloggedin():
         return render_template('afteradminloggedin.html')
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('adminlogin'))
 
 
@@ -591,7 +588,7 @@ def adminsettings():
         return render_template('adminsettings.html',form = form)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('adminlogin'))
 
 
@@ -614,7 +611,7 @@ def adminprofileinfo():
         return render_template('adminprofileinfo.html',result = result1)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('adminlogin'))
 
 @app.route('/adminchangepassword', methods=['GET','POST'])
@@ -641,16 +638,18 @@ def adminchangepassword():
                 except:
                     print("errors")
                 # print(dept)
+                session.pop('_flashes',None)
+                flash("Password Changed",'success')
                 return render_template('afteradminloggedin.html')
             else :
                 session.pop('_flashes', None)
-                flash("Entered passwords don't match")
+                flash("Entered passwords don't match",'warning')
                 return redirect(url_for('adminchangepassword'))
 
         return render_template('adminchangepassword.html',form = form)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('adminlogin'))
 
 @app.route('/adminresolvecomplaint/<cid>')
@@ -674,16 +673,16 @@ def adminresolvecomplaint(cid):
                 return render_template("adminresolvecomplaint.html" , result = result1)
 
             elif res[0][3] == "userresponded_un":
-                result1["statusquouser"] = "not satisfied"
-                result1["statusquoadmin"] = "responded"
+                result1["statusquouser"] = "Not Satisfied"
+                result1["statusquoadmin"] = "Responded"
                 return render_template("adminupdatedstatus.html" , result = result1)
             elif res[0][3] == "adminresponded":
-                result1["statusquouser"] = "not reviewed"
-                result1["statusquoadmin"] = "responded"
+                result1["statusquouser"] = "Not Reviewed"
+                result1["statusquoadmin"] = "Responded"
                 return render_template("adminupdatedstatus.html" , result = result1)
             else:
-                result1["statusquouser"] = "satisfied"
-                result1["statusquoadmin"] = "responded"
+                result1["statusquouser"] = "Satisfied"
+                result1["statusquoadmin"] = "Responded"
                 return render_template("adminupdatedstatus.html" , result = result1)
 
 
@@ -693,7 +692,7 @@ def adminresolvecomplaint(cid):
         return render_template('adminresolvecomplaint.html' , result = result1)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('adminlogin'))
 
 @app.route('/adminchangestatus/<cid>',methods =['POST','GET'])
@@ -748,7 +747,7 @@ def admincomplainthistory():
         return render_template('admincomplainthistory.html',result = result1,resultx = x,resulty = y,resultz = z)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('adminlogin'))
 
 
@@ -783,19 +782,19 @@ def superadminlogin():
         res = cursor.fetchall()
         if(res==[]) :
             session.pop('_flashes', None)
-            flash("Invali SuperAdmin Id")
-            render_template('superadminlogin',form=form)
+            flash("Invalid SuperAdmin Id",'danger')
+            render_template('superadminlogin.html',form=form)
         else :
 
-            if res[0][0] == password:
+            if check_password_hash(res[0][0],password):
                 session['superuser'] = username
 
                 session.pop('_flashes', None)
-                flash("Successfully Loggedin")
+                flash("Successfully Loggedin",'success')
                 return render_template('aftersuperadminloggedin.html')
             else :
                 session.pop('_flashes', None)
-                flash("Invali password")
+                flash("Incorrect password",'danger')
                 render_template('superadminlogin.html',form=form)
     return render_template('superadminlogin.html',form = form)
 
@@ -806,47 +805,48 @@ def aftersuperadminloggedin():
         return render_template('aftersuperadminloggedin.html')
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('superadminlogin'))
 
 
 @app.route('/superadmin_addadmin',methods=['GET','POST'])
 #@nocache
 def superadmin_addadmin():
-	if (session['superuser']!=""):
-		form = AddRemoveAdmin()
-		if form.validate_on_submit():
-			email = form.email.data
-			first_name = form.first_name.data
-			last_name = form.last_name.data
-			age = form.age.data
-			dept = form.department.data
-			division = form.division.data
-			passcode = form.passcode.data
-			sql = "select * from subcat where subcategory = '{0}' and category_ref = '{1}'"
-			sql1 = "select * from admin where admin_id = '{0}'"
-			try:
-				cursor.execute(sql.format(division,dept))
-				res = cursor.fetchall()
-				cursor.execute(sql1.format(email))
-				res1 = cursor.fetchall()
-				if res!=[]:
-					if res1 == []:
-						cursor.execute("insert into admin values(%s,%s,%s,%s,%s)",(email,passcode,first_name,last_name,age))
-					cursor.execute("insert into admin_cat values(%s,%s,%s)",(email,dept,division))
-					db.commit()
-					return render_template('aftersuperadminloggedin.html')
-				else:
-					session.pop('_flashes', None)
-					flash("Warning : The pair department and division does not exist, please  enter it correct.")
-					return redirect(url_for('aftersuperadminloggedin'))
-			except:
-				print("some database error")
-		return render_template('superadminaddadmin.html',form = form)
-	else :
-		session.pop('_flashes', None)
-		flash("Warning : This action is prevented before login. Please, login")
-		return redirect(url_for('superadminlogin'))
+    if (session['superuser']!=""):
+        form = AddRemoveAdmin()
+        if form.validate_on_submit():
+            email = form.email.data
+            first_name = form.first_name.data
+            last_name = form.last_name.data
+            age = form.age.data
+            dept = form.department.data
+            division = form.division.data
+            passcode = form.passcode.data
+            passcode = generate_password_hash(passcode,"sha256")
+            sql = "select * from subcat where subcategory = '{0}' and category_ref = '{1}'"
+            sql1 = "select * from admin where admin_id = '{0}'"
+            try:
+                cursor.execute(sql.format(division,dept))
+                res = cursor.fetchall()
+                cursor.execute(sql1.format(email))
+                res1 = cursor.fetchall()
+                if res!=[]:
+                    if res1 == []:
+                        cursor.execute("insert into admin values(%s,%s,%s,%s,%s)",(email,passcode,first_name,last_name,age))
+                    cursor.execute("insert into admin_cat values(%s,%s,%s)",(email,dept,division))
+                    db.commit()
+                    return render_template('aftersuperadminloggedin.html')
+                else:
+                    session.pop('_flashes', None)
+                    flash("Warning : The pair department and division does not exist, please enter the correct details.",'warning')
+                    return redirect(url_for('superadmin_addadmin'))
+            except:
+                print("some database error")
+        return render_template('superadminaddadmin.html',form = form)
+    else :
+        session.pop('_flashes', None)
+        flash("Warning : This action is prevented before login. Please, login",'danger')
+        return redirect(url_for('superadminlogin'))
 
 
 @app.route('/superadminprofileinfo',methods = ['POST', 'GET'])
@@ -863,7 +863,7 @@ def superadminprofileinfo():
         return render_template('superadminprofileinfo.html',result = result1)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('superadminlogin'))
 
 @app.route('/superadminchangepassword', methods=['GET','POST'])
@@ -889,13 +889,13 @@ def superadminchangepassword():
                 return render_template('aftersuperadminloggedin.html')
             else :
                 session.pop('_flashes', None)
-                flash("Entered passwords don't match")
+                flash("Entered passwords don't match",'warning')
                 return redirect(url_for('superadminchangepassword'))
 
         return render_template('superadminchangepassword.html',form = form)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('superadminlogin'))
 
 
@@ -925,12 +925,12 @@ def superadmin_removeadmin():
 				return render_template('aftersuperadminloggedin.html')
 			else:
 				session.pop('_flashes', None)
-				flash(" there is no such admin exists for that pair")
+				flash("There is no admin for the department,division pair",'warning')
 				return redirect(url_for('superadminremoveadmin'))
 		return render_template('superadminremoveadmin.html',form = form)
 	else :
 		session.pop('_flashes', None)
-		flash("Warning : This action is prevented before login. Please, login")
+		flash("Warning : This action is prevented before login. Please, login",'danger')
 		return redirect(url_for('superadminlogin'))
 
 
@@ -961,18 +961,18 @@ def superadmin_adddivision():
                     return render_template('aftersuperadminloggedin.html')
                 else:
                     session.pop('_flashes', None)
-                    flash(" that category and subcategory pair already exists",'error')
-                    return redirect(url_for('aftersuperadminloggedin'))
+                    flash(" The department and division pair already exists",'warning')
+                    return redirect(url_for('afteradminloggedin'))
             else:
                 session.pop('_flashes', None)
-                flash(" no such category exists")
-                return redirect(url_for('aftersuperadminloggedin'))
+                flash("No such department exists",'warning')
+                return redirect(url_for('superadmin_adddivision'))
 
 
         return render_template('superadminadddivision.html', form=form)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('superadminlogin'))
 
 @app.route('/superadmin_removedivision',methods=['GET','POST'])
@@ -1002,20 +1002,17 @@ def superadmin_removedivision():
                     return render_template('aftersuperadminloggedin.html')
                 else:
                     session.pop('_flashes', None)
-                    flash(" that category and subcategory pair don not exists")
-                    return redirect(url_for('aftersuperadminloggedin'))
+                    flash(" The Department and Division pair doesnot exists",'warning')
+                    return redirect(url_for('superadmin_removedivision'))
             else:
                 session.pop('_flashes', None)
-                flash(" no such category exists")
-                return redirect(url_for('aftersuperadminloggedin'))
-
-
-
+                flash(" No such department exists",'warning')
+                return redirect(url_for('superadmin_removedivision'))
 
         return render_template('superadminremovedivision.html',form=form)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('superadminlogin'))
 
 
@@ -1034,24 +1031,21 @@ def superadmin_adddepartment():
             res = cursor.fetchall()
             if(res!=[]):
                 session.pop('_flashes', None)
-                flash(" already category exists")
+                flash("Department already exists",category = 'warning')
                 return redirect(url_for('aftersuperadminloggedin'))
-
-
             else:
                 try:
                     cursor.execute("insert into cat values(%s)",(dept))
                     db.commit()
                 except:
                     print("errors")
+                
                 return render_template('aftersuperadminloggedin.html')
-
-
 
         return render_template('superadminadddepartment.html',form=form)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('superadminlogin'))
 
 
@@ -1075,14 +1069,14 @@ def superadmin_removedepartment():
                 return render_template('aftersuperadminloggedin.html')
             else:
                 session.pop('_flashes', None)
-                flash(" no such category exists")
+                flash(" No such department exists",'warning')
                 return redirect(url_for('aftersuperadminloggedin'))
 
 
         return render_template('superadminremovedepartment.html',form=form)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('superadminlogin'))
 
 @app.route('/superadminsettings', methods=['GET','POST'])
@@ -1105,7 +1099,7 @@ def superadminsettings():
         return render_template('superadminsettings.html',form = form)
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('superadminlogin'))
 
 @app.route('/display_deptwise_heads')
@@ -1118,7 +1112,7 @@ def display_deptwise_heads():
 
     else :
         session.pop('_flashes', None)
-        flash("Warning : This action is prevented before login. Please, login")
+        flash("Warning : This action is prevented before login. Please, login",'danger')
         return redirect(url_for('adminlogin'))
 
 

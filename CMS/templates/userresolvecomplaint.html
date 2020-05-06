@@ -26,7 +26,28 @@
 
 <!-- <form action = "/cgi-bin/hello_get.cgi" method = "get"> -->
 <center>
+<table  border = 1 >
+  <tr>
+    <th>Department</th>
+    <td>{{result["dept"]}}</td>
+  </tr>
+  <tr>
+    <th>Division</th>
+    <td>{{result["division"]}}</td>
+  </tr>
+  <tr>
+    <th>Description of Complaint</th>
+    <td>{{result["complaint"]}}</td>
+  </tr>
+  <tr>
+    <th>Status from Admin</th>
+    <td>{{result["statusquoadmin"]}}</td>
+  </tr>
 
+</table>
+<br/>
+<!--
+<br/>
 <label for="dept">Department:</label>
 <input type="text" name = "dept" value = "{{result["dept"]}}" readonly>
 <br/>
@@ -46,13 +67,13 @@
 <input type="text" name = "userfeedback" value = "{{result["statusquo"]}}" readonly>
 <br/> </center> -->
 
-<center> Your Feedback : </center>
 
 <form  action = "{{url_for('userchangestatus',cid = result["cid"])}}" Method = "POST"  >
+  Your Feedback : 
   <input type="radio" id="yes" name="statususer" value="Satisfactory">
-  <label for="yes">Yes</label>
+  <label for="yes">Satisfactory</label>
   <input type="radio" id="no" name="statususer" value="Not upto the mark">
-  <label for="no">No</label><br/>
+  <label for="no">Un-satisfactory</label><br/><br/>
   <input type="submit" value="Submit">
 </form>
 
