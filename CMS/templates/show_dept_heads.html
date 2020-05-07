@@ -23,7 +23,7 @@
 
 <br/><br/>
 
-<center>COMPLAINT HISTORY </center>
+<center><h1>category -admin table</h1></center>
 <br/><br/>
 
 <form action="{{ url_for('aftersuperadminloggedin') }}" style="margin-left:auto;margin-right:auto align='center'">
@@ -41,4 +41,20 @@
     {% endfor %}
   </table>
 </center>
+<br/><br/>
+<center><h1>category  table</h1></center>
+<br/><br/>
+
+<form action="{{ url_for('aftersuperadminloggedin') }}" style="margin-left:auto;margin-right:auto align='center'">
+<center>
+  <table border = 7>
+    <th>DEPARTMANT</th>
+    {% for  row in resultx %}
+    <tr>
+      <th> {{ row[0]}}</th>
+    </tr>
+    {% endfor %}
+  </table>
+</center>
+
 </form>
