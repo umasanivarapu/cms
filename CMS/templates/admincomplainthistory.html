@@ -11,6 +11,7 @@
   padding: 2px 6px 2px 6px;
 
 }
+
 .button1 {
   font: 20px Roboto;
   text-decoration: none;
@@ -18,6 +19,7 @@
   padding: 2px 6px 2px 6px;
 
 }
+.button1:hover {background-color: #e7e7e7;}
 
 </style>
 </head>
@@ -44,7 +46,7 @@
     {% for  row in result %}
     <tr>
       <td> {{ row[0]}}</td>
-	    <td> <a href="{{url_for('adminresolvecomplaint',cid = row[0])}}" class="button">{{row[5]}}</a></td>
+	    <td> <a href="{{url_for('adminresolvecomplaint',cid = row[0])}}" class="button1">{{row[5]}}</a></td>
       <td> {{ row[3]}} </td>
       <td> {{ row[4]}} </td>
     </tr>
@@ -63,7 +65,7 @@
     {% for  row in resultx %}
     <tr>
       <td> {{ row[0]}}</td>
-	    <td> <a href="{{url_for('adminresolvecomplaint',cid = row[0])}}" class="button">{{row[5]}}</a></td>
+	    <td> <a href="{{url_for('adminresolvecomplaint',cid = row[0])}}" class="button1">{{row[5]}}</a></td>
       <td> {{ row[3]}} </td>
       <td> {{ row[4]}} </td>
     </tr>
@@ -83,7 +85,7 @@
     {% for  row in resulty %}
     <tr>
       <td> {{ row[0]}}</td>
-	    <td> <a href="{{url_for('adminresolvecomplaint',cid = row[0])}}" class="button">{{row[5]}}</a></td>
+	    <td> <a href="{{url_for('adminresolvecomplaint',cid = row[0])}}" class="button1">{{row[5]}}</a></td>
       <td> {{ row[3]}} </td>
       <td> {{ row[4]}} </td>
     </tr>
@@ -102,7 +104,7 @@
     {% for  row in resultz %}
     <tr>
       <td> {{ row[0]}}</td>
-	    <td> <a href="{{url_for('adminresolvecomplaint',cid = row[0])}}" class="button">{{row[5]}}</a></td>
+	    <td> <a href="{{url_for('adminresolvecomplaint',cid = row[0])}}" class="button1">{{row[5]}}</a></td>
       <td> {{ row[3]}} </td>
       <td> {{ row[4]}} </td>
     </tr>

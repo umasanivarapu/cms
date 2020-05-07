@@ -23,14 +23,14 @@
 
 <br/><br/>
 
-<center><h1>category -admin table</h1></center>
+<center><h1>Category - Admin Table</h1></center>
 <br/><br/>
 
 <form action="{{ url_for('aftersuperadminloggedin') }}" style="margin-left:auto;margin-right:auto align='center'">
 <center>
   <table border = 7>
-    <th>DEPARTMANT</th>
-    <th>DIVISION</th>
+    <th>Department</th>
+    <th>Division</th>
     <th>Admin</th>
     {% for  row in result %}
     <tr>
@@ -42,13 +42,13 @@
   </table>
 </center>
 <br/><br/>
-<center><h1>category  table</h1></center>
+<center><h1>Category  Table</h1></center>
 <br/><br/>
 
 <form action="{{ url_for('aftersuperadminloggedin') }}" style="margin-left:auto;margin-right:auto align='center'">
 <center>
   <table border = 7>
-    <th>DEPARTMANT</th>
+    <th>Department</th>
     {% for  row in resultx %}
     <tr>
       <th> {{ row[0]}}</th>

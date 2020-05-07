@@ -162,36 +162,29 @@ def confirm_email(token):
 @app.route('/userlogin', methods=['GET','POST'])
 #@nocache                              #Login
 def userlogin():
-	form = LoginForm()
-	if form.validate_on_submit():
-		username = form.username.data
-		password = form.password.data
-		remember = form.remember.datuser_name = username
-		print(user_name)
-		sql = "select user_id,password from users where user_id = '{0}'"
-		try:
-			cursor.execute(sql.format(username))
-			res = cursor.fetchall()
-			print(len(res))
-		except:
-			if(res==[]):
-				session.pop('_flashes', None)
-				flash("Invalid Username",'danger')
-				return redirect(url_for('userlogin'))
-			else:
-				print(username)
-				print(password)
-				print(remember)
-				if check_password_hash(str(res[0][1]), password):
-					 session['username'] = username
-					 session.pop('_flashes', None)
-					 flash("Successfully Loggedin",'success')
-					 return render_template('afteruserloggedin.html')
-				else :
-					session.pop('_flashes', None)
-					flash("Incorrect password",'danger')
-					return redirect(url_for('userlogin'))
-	return render_template('userlogin.html',form = form)
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        remember = form.remember.datuser_name = username
+        sql = "select user_id,password from users where user_id = '{0}'"
+        cursor.execute(sql.format(username))
+        res = cursor.fetchall()
+        if(res==[]):
+            session.pop('_flashes', None)
+            flash("Invalid Username",'danger')
+            return redirect(url_for('userlogin'))
+        else:
+            if check_password_hash(str(res[0][1]), password):
+                 session['username'] = username
+                 session.pop('_flashes', None)
+                 flash("Successfully Loggedin",'success')
+                 return render_template('afteruserloggedin.html')
+            else :
+                session.pop('_flashes', None)
+                flash("Incorrect password",'danger')
+                return redirect(url_for('userlogin'))
+    return render_template('userlogin.html',form = form)
 
 
 @app.route('/afteruserloggedin',methods = ['POST', 'GET'])
@@ -295,11 +288,16 @@ def userchangepassword():
 @app.route('/userlodgecomplaint1',methods=['POST','GET'])
 def userlodgecomplaint1():
     if (session['username']!=""):
-        sql = "select * from cat"
+        sql = "select distinct category_ref from admin_cat"
         try:
-        	cursor.execute(sql)
-        	result = cursor.fetchall()
-        	return render_template('userlodgecomplaint1.html',result = result)
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            if(result==[]) :
+                session.pop('_flashes',None)
+                flash("Working on admins. Please try after sometime",'warning')
+                return redirect(url_for('afteruserloggedin'))
+            else :
+                return render_template('userlodgecomplaint1.html',result = result)
         except:
         	print("erros")
     else :
@@ -314,7 +312,7 @@ def userlodgecomplaint2():
 
         var1 = request.form.get('dept')
         print(var1)
-        sql = "select subcategory_ref from admin_cat where category_ref = '{0}' "    #query for subcat fetching
+        sql = "select distinct subcategory_ref from admin_cat where category_ref = '{0}' "    #query for subcat fetching
         cursor.execute(sql.format(var1))
         result = cursor.fetchall()
         res_dic = []
@@ -896,7 +894,7 @@ def superadmin_removeadmin():
 				return render_template('aftersuperadminloggedin.html')
 			else:
 				session.pop('_flashes', None)
-				flash("There is no admin for the department,division pair",'warning')
+				flash("Entered details are mismatched",'warning')
 				return redirect(url_for('superadmin_removeadmin'))
 		return render_template('superadminremoveadmin.html',form = form)
 	else :
@@ -1040,7 +1038,7 @@ def superadmin_removedepartment():
                 return render_template('aftersuperadminloggedin.html')
             else:
                 session.pop('_flashes', None)
-                flash(" No such department exists",'warning')
+                flash("No such department exists",'warning')
                 return redirect(url_for('superadmin_removedepartment'))
 
 
@@ -1085,7 +1083,7 @@ def display_deptwise_heads():
 		return render_template('show_dept_heads.html',result = result,resultx = x)
 	else :
 		session.pop('_flashes', None)
-		flash("Warning : This action is prevented before login. Please, login")
+		flash("Warning : This action is prevented before login. Please, login",'danger')
 		return redirect(url_for('adminlogin'))
 
 
