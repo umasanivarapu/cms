@@ -1,3 +1,3 @@
 # cms
-
-Run python Trail1.py. and type localhost:5000/base in your web browser.
+Run schema.py
+Run python trail.py. and type localhost:5000/ in your web browser.
