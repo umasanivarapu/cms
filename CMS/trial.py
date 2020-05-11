@@ -169,24 +169,23 @@ def userlogin():
         remember = form.remember.datuser_name = username
         sql = "select user_id,password from users where user_id = '{0}'"
        	try:
-	        cursor.execute(sql.format(username))
-		res = cursor.fetchall()
-		print(len(res))
-	except:
-		if(res==[]):
-		    session.pop('_flashes', None)
-		    flash("Invalid Username",'danger')
-		    return redirect(url_for('userlogin'))
-		else:
-		    if check_password_hash(str(res[0][1]), password):
-			 session['username'] = username
-			 session.pop('_flashes', None)
-			 flash("Successfully Loggedin",'success')
-			 return render_template('afteruserloggedin.html')
-		    else :
-			session.pop('_flashes', None)
-			flash("Incorrect password",'danger')
-			return redirect(url_for('userlogin'))
+            cursor.execute(sql.format(username))
+            res = cursor.fetchall()
+        except:
+            if(res==[]):
+                session.pop('_flashes', None)
+                flash("Invalid Username",'danger')
+                return redirect(url_for('userlogin'))
+            else:
+                if check_password_hash(str(res[0][1]), password):
+                    session['username'] = username
+                    session.pop('_flashes', None)
+                    flash("Successfully Loggedin",'success')
+                    return render_template('afteruserloggedin.html')
+                else :
+                    session.pop('_flashes', None)
+                    flash("Incorrect password",'danger')
+                    return redirect(url_for('userlogin'))
     return render_template('userlogin.html',form = form)
 
 
